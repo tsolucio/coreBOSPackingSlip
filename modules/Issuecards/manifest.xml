@@ -15,7 +15,7 @@
   `issuecards_no` varchar(100) DEFAULT NULL,
   `pslip_no` varchar(100) DEFAULT NULL,
   `issue_date` date DEFAULT NULL,
-  `pay_date` date DEFAULT NULL,
+  `deliver_date` date DEFAULT NULL,
   `accid` int(11) DEFAULT NULL,
   `ctoid` int(11) DEFAULT NULL,
   `invoicestatus` varchar(100) DEFAULT NULL,
@@ -116,12 +116,12 @@
 <masseditable>1</masseditable>
 </field>
 <field>
-<fieldname>pay_date</fieldname>
+<fieldname>deliver_date</fieldname>
 <uitype>5</uitype>
-<columnname>pay_date</columnname>
+<columnname>deliver_date</columnname>
 <tablename>vtiger_issuecards</tablename>
 <generatedtype>1</generatedtype>
-<fieldlabel>pay_date</fieldlabel>
+<fieldlabel>deliver_date</fieldlabel>
 <readonly>1</readonly>
 <presence>0</presence>
 <defaultvalue></defaultvalue>
@@ -369,12 +369,12 @@
 <masseditable>1</masseditable>
 </field>
 <field>
-<fieldname>cpostal</fieldname>
+<fieldname>pais</fieldname>
 <uitype>1</uitype>
-<columnname>cpostal</columnname>
+<columnname>pais</columnname>
 <tablename>vtiger_issuecards</tablename>
 <generatedtype>1</generatedtype>
-<fieldlabel>cpostal</fieldlabel>
+<fieldlabel>pais</fieldlabel>
 <readonly>1</readonly>
 <presence>0</presence>
 <defaultvalue></defaultvalue>
@@ -633,7 +633,7 @@
 <columnindex>4</columnindex>
 </field>
 <field>
-<fieldname>pay_date</fieldname>
+<fieldname>deliver_date</fieldname>
 <columnindex>5</columnindex>
 </field>
 <field>
