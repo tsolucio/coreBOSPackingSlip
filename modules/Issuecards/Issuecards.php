@@ -1,14 +1,12 @@
 <?php
-/*********************************************************************************
-** The contents of this file are subject to the vtiger CRM Public License Version 1.0
+/*+**********************************************************************************
+ * The contents of this file are subject to the vtiger CRM Public License Version 1.0
  * ("License"); You may not use this file except in compliance with the License
  * The Original Code is:  vtiger CRM Open Source
  * The Initial Developer of the Original Code is vtiger.
  * Portions created by vtiger are Copyright (C) vtiger.
  * All Rights Reserved.
-*
- ********************************************************************************/
-
+ ************************************************************************************/
 require_once('data/CRMEntity.php');
 require_once('data/Tracker.php');
 
@@ -117,16 +115,18 @@ class Issuecards extends CRMEntity {
 	}
 
 	function getSortOrder() {
+		global $currentModule;
 
 	    $sortorder = $this->default_sort_order;
 	    if($_REQUEST['sorder']) $sortorder = $this->db->sql_escape_string($_REQUEST['sorder']);
-	    else if($_SESSION['Issuecards_Sort_Order'])
-	    $sortorder = $_SESSION['Issuecards_Sort_Order'];
+		else if($_SESSION[$currentModule.'_Sort_Order']) 
+			$sortorder = $_SESSION[$currentModule.'_Sort_Order'];
 
 	    return $sortorder;
 	}
 
 	function getOrderBy() {
+		global $currentModule;
 
 	    $use_default_order_by = '';
 	    if(PerformancePrefs::getBoolean('LISTVIEW_DEFAULT_SORTING', true)) {
@@ -135,8 +135,8 @@ class Issuecards extends CRMEntity {
 
 	    $orderby = $use_default_order_by;
 	    if($_REQUEST['order_by']) $orderby = $this->db->sql_escape_string($_REQUEST['order_by']);
-	    else if($_SESSION['Issuecards_Order_By'])
-	    $orderby = $_SESSION['Issuecards_Order_By'];
+		else if($_SESSION[$currentModule.'_Order_By'])
+			$orderby = $_SESSION[$currentModule.'_Order_By'];
 	    return $orderby;
 	}
 
@@ -184,7 +184,7 @@ class Issuecards extends CRMEntity {
 	 * Return query to use based on given modulename, fieldname
 	 * Useful to handle specific case handling for Popup
 	 */
-	function getQueryByModuleField($module, $fieldname, $srcrecord) {
+	function getQueryByModuleField($module, $fieldname, $srcrecord, $query='') {
 	    // $srcrecord could be empty
 	}
 
@@ -192,8 +192,11 @@ class Issuecards extends CRMEntity {
 	/**
 	 * Get list view query (send more WHERE clause condition if required)
 	 */
-	function getListQuery($module, $where='') {
+	function getListQuery($module, $usewhere='') {
 	    $query = "SELECT vtiger_crmentity.*, $this->table_name.*";
+		
+		// Keep track of tables joined to avoid duplicates
+		$joinedTables = array();
 
 	    // Select Custom Field Table Columns if present
 	    if(!empty($this->customFieldTable)) $query .= ", " . $this->customFieldTable[0] . ".* ";
@@ -202,14 +205,21 @@ class Issuecards extends CRMEntity {
 
 	    $query .= "	INNER JOIN vtiger_crmentity ON vtiger_crmentity.crmid = $this->table_name.$this->table_index";
 
+		$joinedTables[] = $this->table_name;
+		$joinedTables[] = 'vtiger_crmentity';
+		
 	    // Consider custom table join as well.
 	    if(!empty($this->customFieldTable)) {
 	        $query .= " INNER JOIN ".$this->customFieldTable[0]." ON ".$this->customFieldTable[0].'.'.$this->customFieldTable[1] .
 			      " = $this->table_name.$this->table_index"; 
+			$joinedTables[] = $this->customFieldTable[0]; 
 	    }
 	    $query .= " LEFT JOIN vtiger_users ON vtiger_users.id = vtiger_crmentity.smownerid";
 	    $query .= " LEFT JOIN vtiger_groups ON vtiger_groups.groupid = vtiger_crmentity.smownerid";
 
+		$joinedTables[] = 'vtiger_users';
+		$joinedTables[] = 'vtiger_groups';
+		
 	    $linkedModulesQuery = $this->db->pquery("SELECT distinct fieldname, columnname, relmodule FROM vtiger_field" .
 			" INNER JOIN vtiger_fieldmodulerel ON vtiger_fieldmodulerel.fieldid = vtiger_field.fieldid" .
 			" WHERE uitype='10' AND vtiger_fieldmodulerel.module=?", array($module));
@@ -223,11 +233,15 @@ class Issuecards extends CRMEntity {
 	        $other = CRMEntity::getInstance($related_module);
 	        vtlib_setup_modulevars($related_module, $other);
 	        	
+			if(!in_array($other->table_name, $joinedTables)) {
 	        $query .= " LEFT JOIN $other->table_name ON $other->table_name.$other->table_index = $this->table_name.$columnname";
+				$joinedTables[] = $other->table_name;
+			}
 	    }
 
-	    $query .= "	WHERE vtiger_crmentity.deleted = 0 ".$where;
-	    $query .= $this->getListViewSecurityParameter($module);
+		global $current_user;
+		$query .= $this->getNonAdminAccessControlQuery($module,$current_user);
+		$query .= "	WHERE vtiger_crmentity.deleted = 0 ".$usewhere;
 	    return $query;
 	}
 
@@ -307,6 +321,7 @@ class Issuecards extends CRMEntity {
 			" WHERE uitype='10' AND vtiger_fieldmodulerel.module=?", array($thismodule));
 	    $linkedFieldsCount = $this->db->num_rows($linkedModulesQuery);
 
+		$rel_mods[$this->table_name] = 1;
 	    for($i=0; $i<$linkedFieldsCount; $i++) {
 	        $related_module = $this->db->query_result($linkedModulesQuery, $i, 'relmodule');
 	        $fieldname = $this->db->query_result($linkedModulesQuery, $i, 'fieldname');
@@ -315,23 +330,25 @@ class Issuecards extends CRMEntity {
 	        $other = CRMEntity::getInstance($related_module);
 	        vtlib_setup_modulevars($related_module, $other);
 	        	
-	        $query .= " LEFT JOIN $other->table_name ON $other->table_name.$other->table_index = $this->table_name.$columnname";
+			if($rel_mods[$other->table_name]) {
+				$rel_mods[$other->table_name] = $rel_mods[$other->table_name] + 1;
+				$alias = $other->table_name.$rel_mods[$other->table_name];
+				$query_append = "as $alias";
+			} else {
+				$alias = $other->table_name;
+				$query_append = '';
+				$rel_mods[$other->table_name] = 1;	
 	    }
 
+			$query .= " LEFT JOIN $other->table_name $query_append ON $alias.$other->table_index = $this->table_name.$columnname";
+		}
+
+		$query .= $this->getNonAdminAccessControlQuery($thismodule,$current_user);
 	    $where_auto = " vtiger_crmentity.deleted=0";
 
 	    if($where != '') $query .= " WHERE ($where) AND $where_auto";
 	    else $query .= " WHERE $where_auto";
 
-	    require('user_privileges/user_privileges_'.$current_user->id.'.php');
-	    require('user_privileges/sharing_privileges_'.$current_user->id.'.php');
-
-	    // Security Check for Field Access
-	    if($is_admin==false && $profileGlobalPermission[1] == 1 && $profileGlobalPermission[2] == 1 && $defaultOrgSharingPermission[7] == 3)
-	    {
-	        //Added security check to get the permitted records only
-	        $query = $query." ".getListViewSecurityParameter($thismodule);
-	    }
 	    return $query;
 	}
 
@@ -376,12 +393,12 @@ class Issuecards extends CRMEntity {
 	    }
 	    return $count;
 	}
-
+	
 	/**
 	 * Transform the value while exporting
 	 */
 	function transform_export_value($key, $value) {
-	    return parent::transform_export_value($key, $value);
+		return parent::transform_export_value($key, $value);
 	}
 
 	/**
@@ -461,6 +478,7 @@ class Issuecards extends CRMEntity {
 	function vtlib_handler($modulename, $event_type) {
 	    if($event_type == 'module.postinstall') {
 	        // TODO Handle post installation actions
+	    	$this->setModuleSeqNumber('configure', $modulename, 'pslip-', '0000001');
 	    } else if($event_type == 'module.disabled') {
 	        // TODO Handle actions when this module is disabled.
 	    } else if($event_type == 'module.enabled') {
@@ -473,81 +491,6 @@ class Issuecards extends CRMEntity {
 	        // TODO Handle actions after this module is updated.
 	    }
 	}
-
-	/**
-	 * Handle getting related list information.
-	 * NOTE: This function has been added to CRMEntity (base class).
-	 * You can override the behavior by re-defining it here.
-	 */
-	//function get_related_list($id, $cur_tab_id, $rel_tab_id, $actions=false) { }
-
-	/**
-	 * Handle getting dependents list information.
-	 * NOTE: This function has been added to CRMEntity (base class).
-	 * You can override the behavior by re-defining it here.
-	 */
-	//function get_dependents_list($id, $cur_tab_id, $rel_tab_id, $actions=false) { }
-
-
-	function get_gantt_chart($currentModule,$focus,$size){
-		require_once("BURAK_Gantt.class.php");
-        global $adb,$tmp_dir;
-        $record = vtlib_purify($_GET['record']);
-		$g = new BURAK_Gantt();
-		// set grid type
-		$g->setGrid(1);
-		// set Gantt colors
-		$g->setColor("group","000000");
-		$g->setColor("progress","660000");
-		
-		$related_operations = $adb->pquery("SELECT ope.* FROM vtiger_operation AS ope INNER JOIN vtiger_crmentity AS crment ON ope.operationid=crment.crmid WHERE projectid=? AND crment.deleted=0",array($record)) or die("damn");
-		
-		while($rec_related_operations = $adb->fetchByAssoc($related_operations)){
-		
-			if($rec_related_operations['operationprogress']=="--none--"){
-				$percentage = 0;
-			} else {
-				$percentage = str_replace("%","",$rec_related_operations['operationprogress']);
-			}
-		
-			$g->addTask($rec_related_operations['operationid'],$rec_related_operations['startdate'],$rec_related_operations['enddate'],$percentage,$rec_related_operations['operationname']);
-		}
-		
-		
-		$related_deadlines = $adb->pquery("SELECT deadl.* FROM vtiger_deadline AS deadl INNER JOIN vtiger_crmentity AS crment on deadl.deadlineid=crment.crmid WHERE projectid=? and crment.deleted=0",array($record)) or die("damn");
-		
-		while($rec_related_deadlines = $adb->fetchByAssoc($related_deadlines)){
-            if ($rec_related_deadlines['milestone']==1)
-    			$g->addMilestone($rec_related_deadlines['deadlineid'],$rec_related_deadlines['deadlinedate'],$rec_related_deadlines['deadlinename']);
-		}
-		
-		$g->outputGantt($tmp_dir."diagram_".$record.".jpg","100");
-		
-		$origin = $tmp_dir."diagram_".$record.".jpg";
-		$destination = $tmp_dir."pic_diagram_".$record.".jpg";
-
-		$imagesize = getimagesize($origin);
-		if($imagesize[0] > $size){
-			
-			$width = $size;
-			$height = ($size * $imagesize[1])/$imagesize[0];
-			copy($origin,$destination);
-			$id_origin = imagecreatefromjpeg($destination);
-			$id_destination = imagecreate($width, $height);
-			imagecopyresized($id_destination, $id_origin, 0, 0, 0, 0, $width, $height, $imagesize[0], $imagesize[1]);
-			imagejpeg($id_destination,$destination);
-			imagedestroy($id_origin);
-			imagedestroy($id_destination);
-		
-			$image = $destination;
-		} else {
-			$image = $origin;
-		}
-
-		// output Gantt image relative path
-		return $image;
-	}
-
 
     /**
      * Here we override the parent's method,
@@ -605,10 +548,6 @@ class Issuecards extends CRMEntity {
         }
     }
 
-    /* Generic function to get attachments in the related list of a given module */
-    function get_attachments($id, $cur_tab_id, $rel_tab_id, $actions=false) {
-        return parent::get_attachments($id, $cur_tab_id, $rel_tab_id, $actions);
-    }
 }
 
 function getIssuecardsInventoryTaxType($id)
