@@ -1,7 +1,7 @@
 <?php
 /*********************************************************************************
 ** The contents of this file are subject to the vtiger CRM Public License Version 1.0
- * ("License"); You may not use this file except in compliance with the License
+ * ('License'); You may not use this file except in compliance with the License
  * The Original Code is:  vtiger CRM Open Source
  * The Initial Developer of the Original Code is vtiger.
  * Portions created by vtiger are Copyright (C) vtiger.
@@ -10,35 +10,38 @@
  ********************************************************************************/
 
 $mod_strings = array(
-"LBL_MODULE_NAME"=>"FB",
-"LBL_MODULE_TITLE"=>"FB",
-"LBL_ISSUECARDS_INFO"=>"Información FB",
-"LBL_CUSTOM_INFORMATION"=>"Información Personalizada",
-"LBL_DESCRIPTION_INFO"=>"Descripción",
-"LBL_RELATED_PRODUCTS"=>"Productos",
-"LBL_RECALCULATE_STOCK"=>"Recalcular stock",
+	'Issuecards' => 'Albaranes',
+	'SINGLE_Issuecards' => 'Albarán',
+	'Issuecards ID' => 'ID Albarán',
+	'LBL_MODULE_NAME'=>'Albarán',
+	'LBL_MODULE_TITLE'=>'Albarán',
 
-"Issuecards No"=>"Referencia FB",
-"Description"=>"Descripción",
-"Created Time"=>"Fecha Creación",
-"Modified Time"=>"Fecha Modificación",
-"LBL_ACTION"=>"Acción",
-"Issuecards"=>"FB",
-"SINGLE_Issuecards"=>"FB",
-"Issuecard Date"=>"Fecha emisión",
+	'LBL_CUSTOM_INFORMATION' => 'Información Personalizada',
+	'LBL_MODULEBLOCK_INFORMATION' => 'Información Albarán',
+	'LBL_ISSUECARDS_INFO'=>'Información Albarán',
+	'LBL_DESCRIPTION_INFORMATION' => 'Descripción',
+	'LBL_DESCRIPTION_INFO'=>'Descripción',
+	'LBL_ADDRESS_INFORMATION'=>'Información Dirección',
+	'LBL_RELATED_PRODUCTS'=>'Productos',
+	'LBL_RECALCULATE_STOCK'=>'Recalcular stock',
+	'LBL_RECALCULATE_QUESTION'=>'¿Seguro que quieres recalcular el stock de los productos?',
 
-"LBL_RECALCULATE_QUESTION"=>"¿Seguro que quieres recalcular el stock de los productos?",
-
-'num_fb' => 'Nº FB',
-'ctoid' => 'Persona de Contacto',
-'accid' => 'Cuenta',
-'fecha_pago' => 'Fecha de Pago',
-'invoicestatus' => 'Estado',
-'calle' => 'Dirección',
-'poblacion' => 'Población',
-'provincia' => 'Provincia',
-'cpostal' => 'Código Postal',
-'pais' => 'País',
+	'Issuecards No'=>'Nº Albarán',
+	'Description'=>'Descripción',
+	'Created Time'=>'Fecha Creación',
+	'Modified Time'=>'Fecha Modificación',
+	'LBL_ACTION'=>'Acción',
+	'Issuecard Date'=>'Fecha emisión',
+	'pslip_no' => 'Referencia Albarán',
+	'pay_date' => 'Fecha de Pago',
+	'ctoid' => 'Persona de Contacto',
+	'accid' => 'Cuenta',
+	'invoicestatus' => 'Estado',
+	'calle' => 'Dirección',
+	'poblacion' => 'Población',
+	'provincia' => 'Provincia',
+	'cpostal' => 'Código Postal',
+	'pais' => 'País',
 
 );
 ?>
