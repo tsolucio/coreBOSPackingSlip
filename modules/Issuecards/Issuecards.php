@@ -147,7 +147,7 @@ class Issuecards extends CRMEntity {
   			if($_REQUEST['action'] != 'IssuecardsAjax' && $_REQUEST['ajxaction'] != 'DETAILVIEW' && $_REQUEST['action'] != 'MassEditSave')
   			{
   				//Based on the total Number of rows we will save the product relationship with this entity
-  				saveIssuecardsInventoryProductDetails(&$this, 'Issuecards');
+  				saveIssuecardsInventoryProductDetails($this, 'Issuecards');
   			}
   		}
   		
