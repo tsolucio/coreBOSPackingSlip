@@ -215,7 +215,7 @@
 <defaultvalue></defaultvalue>
 <sequence>8</sequence>
 <maximumlength>100</maximumlength>
-<typeofdata>V~O</typeofdata>
+<typeofdata>V~M</typeofdata>
 <quickcreate>1</quickcreate>
 <quickcreatesequence></quickcreatesequence>
 <displaytype>1</displaytype>
