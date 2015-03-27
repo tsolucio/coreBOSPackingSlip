@@ -135,19 +135,8 @@ elseif (isset ($_REQUEST['isDuplicate']) && $_REQUEST['isDuplicate'] == 'true') 
 }
 elseif ((isset ($_REQUEST['product_id']) && $_REQUEST['product_id'] != '') || (isset ($_REQUEST['opportunity_id']) && $_REQUEST['opportunity_id'] != '')) {
 	$smarty->assign("ASSOCIATEDPRODUCTS", $associated_prod);
-	$InvTotal = getInventoryTotal($_REQUEST['return_module'], $_REQUEST['return_id']);
+	$smarty->assign("AVAILABLE_PRODUCTS", count($associated_prod)>0 ? 'true' : 'false');
 	$smarty->assign("MODE", $focus->mode);
-
-	//this is to display the Product Details in first row when we create new PO from Product relatedlist
-	if ($_REQUEST['return_module'] == 'Products') {
-		$smarty->assign("PRODUCT_ID", vtlib_purify($_REQUEST['product_id']));
-		$smarty->assign("PRODUCT_NAME", getProductName($_REQUEST['product_id']));
-		$smarty->assign("UNIT_PRICE", vtlib_purify($_REQUEST['product_id']));
-		$smarty->assign("QTY_IN_STOCK", getPrdQtyInStck($_REQUEST['product_id']));
-		$smarty->assign("VAT_TAX", getProductTaxPercentage("VAT", $_REQUEST['product_id']));
-		$smarty->assign("SALES_TAX", getProductTaxPercentage("Sales", $_REQUEST['product_id']));
-		$smarty->assign("SERVICE_TAX", getProductTaxPercentage("Service", $_REQUEST['product_id']));
-	}
 }
 
 if (isset ($cust_fld)) {
