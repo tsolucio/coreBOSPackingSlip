@@ -95,10 +95,8 @@ function sensex_info()
 			{/if}
 		 {/if}
 
-		 <hr noshade size=1>
-		 <br> 
-		
-		
+			<hr noshade size=1>
+			<br>
 
 		{*<!-- Account details tabs -->*}
 		<table border=0 cellspacing=0 cellpadding=0 width=95% align=center>
@@ -219,12 +217,12 @@ function sensex_info()
         var fielddatatype = new Array({$VALIDATION_DATA_FIELDDATATYPE})
 
 	var product_labelarr = {ldelim}CLEAR_COMMENT:'{$APP.LBL_CLEAR_COMMENT}',
-                                DISCOUNT:'{$APP.LBL_DISCOUNT}',
-                                TOTAL_AFTER_DISCOUNT:'{$APP.LBL_TOTAL_AFTER_DISCOUNT}',
-                                TAX:'{$APP.LBL_TAX}',
-                                ZERO_DISCOUNT:'{$APP.LBL_ZERO_DISCOUNT}',
-                                PERCENT_OF_PRICE:'{$APP.LBL_OF_PRICE}',
-                                DIRECT_PRICE_REDUCTION:'{$APP.LBL_DIRECT_PRICE_REDUCTION}'{rdelim};
+				DISCOUNT:'{$APP.LBL_DISCOUNT}',
+				TOTAL_AFTER_DISCOUNT:'{$APP.LBL_TOTAL_AFTER_DISCOUNT}',
+				TAX:'{$APP.LBL_TAX}',
+				ZERO_DISCOUNT:'{$APP.LBL_ZERO_DISCOUNT}',
+				PERCENT_OF_PRICE:'{$APP.LBL_OF_PRICE}',
+				DIRECT_PRICE_REDUCTION:'{$APP.LBL_DIRECT_PRICE_REDUCTION}'{rdelim};
 
 </script>
 

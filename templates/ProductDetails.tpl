@@ -160,8 +160,8 @@ function displayCoords(currObj,obj,mode,curr_row)
 				<input type="hidden" id="lineItemType1" name="lineItemType1" value="Products" />
 				&nbsp;<img id="searchIcon1" title="Products" src="{'products.gif'|@vtiger_imageurl:$THEME}" style="cursor: pointer;" align="absmiddle" onclick="productPickList(this,'{$MODULE}',1)" />
 			</td>
-    	   </tr>
-    	   <tr>
+		</tr>
+		<tr>
 			<td class="small">
 				<input type="hidden" value="" id="subproduct_ids1" name="subproduct_ids1" />
 				<span id="subprod_names1" name="subprod_names1" style="color:#C0C0C0;font-style:italic;"> </span>
@@ -264,15 +264,6 @@ function displayCoords(currObj,obj,mode,curr_row)
 </table>
 <!-- Upto this has been added for form the first row. Based on these above we should form additional rows using script -->
 
-
-
-
-
-
-
-
-
-
 <table width="100%"  border="0" align="center" cellpadding="5" cellspacing="0" class="crmTable">
    <!-- Add Product Button -->
    <tr>
@@ -282,9 +273,6 @@ function displayCoords(currObj,obj,mode,curr_row)
 			<input type="button" name="Button" class="crmbutton small create" value="{$APP.LBL_ADD_SERVICE}" onclick="fnAddServiceRowRI('{$MODULE}','{$IMAGE_PATH}');" />
 	</td>
    </tr>
-
-
-
 
    <!-- Product Details Final Total Discount, Tax and Shipping&Hanling  - Starts -->
    <tr valign="top">
@@ -438,5 +426,15 @@ function displayCoords(currObj,obj,mode,curr_row)
    </tr>
 
 
+<!-- Added to calculate the tax and total values when page loads -->
+<script>
+ decideTaxDiv();
+ {if $TAX_TYPE eq 'group'}
+ 	calcGroupTax();
+ {/if}
+ calcTotal();
+ calcSHTax();
+</script>
+<!-- This above div is added to display the tax informations --> 
 
 

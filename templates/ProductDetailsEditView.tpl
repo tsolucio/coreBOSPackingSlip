@@ -334,8 +334,6 @@ function displayCoords(currObj,obj,mode,curr_row)
    {/foreach}
 </table>
 
-
-
 <table width="100%"  border="0" align="center" cellpadding="5" cellspacing="0" class="crmTable">
    <!-- Add Product Button -->
    <tr>
@@ -344,9 +342,6 @@ function displayCoords(currObj,obj,mode,curr_row)
 			<input type="button" name="Button" class="crmbutton small create" value="{$APP.LBL_ADD_SERVICE}" onclick="fnAddServiceRowRI('{$MODULE}','{$IMAGE_PATH}');" />
 	</td>
    </tr>
-
-
-
 
 <!--
 All these details are stored in the first element in the array with the index name as final_details 
@@ -526,9 +521,14 @@ so we will get that array, parse that array and fill the details
 
 
 <!-- Added to calculate the tax and total values when page loads -->
-<script>decideTaxDiv();</script>
-<script>calcTotal();</script>
-<script>calcSHTax();</script>
+<script>
+ decideTaxDiv();
+ {if $TAX_TYPE eq 'group'}
+ 	calcGroupTax();
+ {/if}
+ calcTotal();
+ calcSHTax();
+</script>
 <!-- This above div is added to display the tax informations --> 
 
 
