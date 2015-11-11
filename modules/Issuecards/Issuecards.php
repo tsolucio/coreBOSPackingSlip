@@ -11,48 +11,48 @@ require_once('data/CRMEntity.php');
 require_once('data/Tracker.php');
 
 class Issuecards extends CRMEntity {
-    var $db, $log; // Used in class functions of CRMEntity
+	var $db, $log; // Used in class functions of CRMEntity
 
-    var $table_name = 'vtiger_issuecards';
-    var $table_index= 'issuecardid';
-    var $column_fields = Array();
+	var $table_name = 'vtiger_issuecards';
+	var $table_index= 'issuecardid';
+	var $column_fields = Array();
 
-    /** Indicator if this is a custom module or standard module */
-    var $IsCustomModule = true;
+	/** Indicator if this is a custom module or standard module */
+	var $IsCustomModule = true;
+	var $HasDirectImageField = false;
+	/**
+	 * Mandatory table for supporting custom fields.
+	 */
+	var $customFieldTable = Array('vtiger_issuecardscf', 'issuecardid');
 
-    /**
-     * Mandatory table for supporting custom fields.
-     */
-    var $customFieldTable = Array('vtiger_issuecardscf', 'issuecardid');
+	/**
+	 * Mandatory for Saving, Include tables related to this module.
+	 */
+	var $tab_name = Array('vtiger_crmentity', 'vtiger_issuecards', 'vtiger_issuecardscf');
 
-    /**
-     * Mandatory for Saving, Include tables related to this module.
-     */
-    var $tab_name = Array('vtiger_crmentity', 'vtiger_issuecards', 'vtiger_issuecardscf');
-
-    /**
-     * Mandatory for Saving, Include tablename and tablekey columnname here.
-     */
-    var $tab_name_index = Array(
+	/**
+	 * Mandatory for Saving, Include tablename and tablekey columnname here.
+	 */
+	var $tab_name_index = Array(
 		'vtiger_crmentity' => 'crmid',
 		'vtiger_issuecards'   => 'issuecardid',
-	  'vtiger_issuecardscf' => 'issuecardid');
+		'vtiger_issuecardscf' => 'issuecardid');
 
-    /**
-     * Mandatory for Listing (Related listview)
-     */
-    var $list_fields = Array (
-    /* Format: Field Label => Array(tablename, columnname) */
-    // tablename should not have prefix 'vtiger_'
-		'Issuecards No'=> Array('project', 'issuecards_no'),
-		'ctoid' => Array('issuecards', 'ctoid'),
-		'accid' => Array('issuecards', 'accid'),
-		'fecha_pago' => Array('issuecards', 'fecha_pago'),
-		'invoicestatus' => Array('issuecards', 'invoicestatus'),
-		'Assigned To' => Array('crmentity','smownerid')
-    );
-    var $list_fields_name = Array(
-    /* Format: Field Label => fieldname */
+	/**
+	 * Mandatory for Listing (Related listview)
+	 */
+	var $list_fields = Array (
+	/* Format: Field Label => Array(tablename => columnname) */
+	// tablename should not have prefix 'vtiger_'
+		'Issuecards No'=> Array('project' => 'issuecards_no'),
+		'ctoid' => Array('issuecards' => 'ctoid'),
+		'accid' => Array('issuecards' => 'accid'),
+		'fecha_pago' => Array('issuecards' => 'fecha_pago'),
+		'invoicestatus' => Array('issuecards' => 'invoicestatus'),
+		'Assigned To' => Array('crmentity' => 'smownerid')
+	);
+	var $list_fields_name = Array(
+		/* Format: Field Label => fieldname */
 		'Issuecards No'=> 'issuecards_no',
 		'ctoid' => 'ctoid',
 		'accid' => 'accid',
@@ -66,21 +66,21 @@ class Issuecards extends CRMEntity {
 
 	// For Popup listview and UI type support
 	var $search_fields = Array(
-	/* Format: Field Label => Array(tablename, columnname) */
-	// tablename should not have prefix 'vtiger_'
-	'Issuecards No'=> Array('issuecards', 'issuecards_no'),
-	'ctoid' => Array('issuecards', 'ctoid'),
-	'accid' => Array('issuecards', 'accid'),
-	'fecha_pago' => Array('issuecards', 'fecha_pago'),
-	'invoicestatus' => Array('issuecards', 'invoicestatus'),
+		/* Format: Field Label => Array(tablename => columnname) */
+		// tablename should not have prefix 'vtiger_'
+		'Issuecards No'=> Array('issuecards' => 'issuecards_no'),
+		'ctoid' => Array('issuecards' => 'ctoid'),
+		'accid' => Array('issuecards' => 'accid'),
+		'fecha_pago' => Array('issuecards' => 'fecha_pago'),
+		'invoicestatus' => Array('issuecards' => 'invoicestatus'),
 	);
 	var $search_fields_name = Array(
-	/* Format: Field Label => fieldname */
-	'Issuecards No'=> 'issuecards_no',
-	'ctoid' => 'ctoid',
-	'accid' => 'accid',
-	'fecha_pago' => 'fecha_pago',
-	'invoicestatus' => 'invoicestatus',
+		/* Format: Field Label => fieldname */
+		'Issuecards No'=> 'issuecards_no',
+		'ctoid' => 'ctoid',
+		'accid' => 'accid',
+		'fecha_pago' => 'fecha_pago',
+		'invoicestatus' => 'invoicestatus',
 	);
 
 	// For Popup window record selection
@@ -108,10 +108,10 @@ class Issuecards extends CRMEntity {
 	var $mandatory_fields = Array('createdtime', 'modifiedtime', 'issuecards_no');
 
 	function __construct() {
-	    global $log;
-	    $this->column_fields = getColumnFields('Issuecards');
-	    $this->db = PearDatabase::getInstance();
-	    $this->log = $log;
+		global $log;
+		$this->column_fields = getColumnFields('Issuecards');
+		$this->db = PearDatabase::getInstance();
+		$this->log = $log;
 	}
 
 	function getSortOrder() {
@@ -141,20 +141,19 @@ class Issuecards extends CRMEntity {
 	}
 
 	function save_module($module) {
-	    
-      //in ajax save we should not call this function, because this will delete all the existing product values
-  		if(isset($_REQUEST)) {
-  			if($_REQUEST['action'] != 'IssuecardsAjax' && $_REQUEST['ajxaction'] != 'DETAILVIEW' && $_REQUEST['action'] != 'MassEditSave')
-  			{
-  				//Based on the total Number of rows we will save the product relationship with this entity
-  				saveIssuecardsInventoryProductDetails($this, 'Issuecards');
-  			}
-  		}
-  		
-  		// Update the currency id and the conversion rate for the invoice
-  		$update_query = "update vtiger_issuecards set currency_id=?, conversion_rate=? where issuecardid=?";
-  		$update_params = array($this->column_fields['currency_id'], $this->column_fields['conversion_rate'], $this->id); 
-  		$this->db->pquery($update_query, $update_params);
+		//in ajax save we should not call this function, because this will delete all the existing product values
+		if(isset($_REQUEST)) {
+			if($_REQUEST['action'] != 'IssuecardsAjax' && $_REQUEST['ajxaction'] != 'DETAILVIEW' && $_REQUEST['action'] != 'MassEditSave')
+			{
+				//Based on the total Number of rows we will save the product relationship with this entity
+				saveIssuecardsInventoryProductDetails($this, 'Issuecards');
+			}
+		}
+
+		// Update the currency id and the conversion rate for the invoice
+		$update_query = "update vtiger_issuecards set currency_id=?, conversion_rate=? where issuecardid=?";
+		$update_params = array($this->column_fields['currency_id'], $this->column_fields['conversion_rate'], $this->id); 
+		$this->db->pquery($update_query, $update_params);
 	}
 
   function restore($module, $id) {
@@ -188,13 +187,12 @@ class Issuecards extends CRMEntity {
 	    // $srcrecord could be empty
 	}
 
-	
 	/**
 	 * Get list view query (send more WHERE clause condition if required)
 	 */
 	function getListQuery($module, $usewhere='') {
-	    $query = "SELECT vtiger_crmentity.*, $this->table_name.*";
-		
+		$query = "SELECT vtiger_crmentity.*, $this->table_name.*";
+
 		// Keep track of tables joined to avoid duplicates
 		$joinedTables = array();
 
@@ -237,27 +235,27 @@ class Issuecards extends CRMEntity {
 	        $query .= " LEFT JOIN $other->table_name ON $other->table_name.$other->table_index = $this->table_name.$columnname";
 				$joinedTables[] = $other->table_name;
 			}
-	    }
+		}
 
 		global $current_user;
 		$query .= $this->getNonAdminAccessControlQuery($module,$current_user);
 		$query .= "	WHERE vtiger_crmentity.deleted = 0 ".$usewhere;
-	    return $query;
+		return $query;
 	}
 
 	/**
 	 * Apply security restriction (sharing privilege) query part for List view.
 	 */
 	function getListViewSecurityParameter($module) {
-	    global $current_user;
-	    require('user_privileges/user_privileges_'.$current_user->id.'.php');
-	    require('user_privileges/sharing_privileges_'.$current_user->id.'.php');
+		global $current_user;
+		require('user_privileges/user_privileges_'.$current_user->id.'.php');
+		require('user_privileges/sharing_privileges_'.$current_user->id.'.php');
 
-	    $sec_query = '';
-	    $tabid = getTabid($module);
+		$sec_query = '';
+		$tabid = getTabid($module);
 
-	    if($is_admin==false && $profileGlobalPermission[1] == 1 && $profileGlobalPermission[2] == 1
-	    && $defaultOrgSharingPermission[$tabid] == 3) {
+		if($is_admin==false && $profileGlobalPermission[1] == 1 && $profileGlobalPermission[2] == 1
+			&& $defaultOrgSharingPermission[$tabid] == 3) {
 
 	        $sec_query .= " AND (vtiger_crmentity.smownerid in($current_user->id) OR vtiger_crmentity.smownerid IN
 				(
@@ -641,7 +639,7 @@ function saveIssuecardsInventoryProductDetails($focus, $module, $update_prod_sto
 
 		$sub_prod_str = $_REQUEST['subproduct_ids'.$i];
 		if (!empty($sub_prod_str)) {
-			$sub_prod = split(":",$sub_prod_str);
+			$sub_prod = explode(":",$sub_prod_str);
 			for($j=0;$j<count($sub_prod);$j++){
 				$query ="insert into vtiger_inventorysubproductrel(id, sequence_no, productid) values(?,?,?)";
 				$qparams = array($focus->id,$prod_seq,$sub_prod[$j]);
