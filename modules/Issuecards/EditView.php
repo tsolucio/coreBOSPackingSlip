@@ -28,7 +28,6 @@ $smarty->assign("SEARCH", $searchurl);
 $currencyid = fetchCurrency($current_user->id);
 $rate_symbol = getCurrencySymbolandCRate($currencyid);
 $rate = $rate_symbol['rate'];
-
 if (isset ($_REQUEST['record']) && $_REQUEST['record'] != '') 
 {
 		if (isset ($_REQUEST['convertmode']) && $_REQUEST['convertmode'] == 'quotetoissuecard') {

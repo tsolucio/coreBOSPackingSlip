@@ -201,7 +201,6 @@ function displayCoords(currObj,obj,mode,curr_row)
 					{/if}
 				</td>
 		   </tr>
-		   </tr>
 		   <tr>
 				<td class="small">
 					<input type="hidden" value="{$data.$subproduct_ids}" id="{$subproduct_ids}" name="{$subproduct_ids}" />

@@ -143,10 +143,6 @@ if(!empty($order_by)) {
 	}
 }
 
-//Postgres 8 fixes
-if( $adb->dbType == "pgsql")
-	$list_query = fixPostgresQuery( $list_query, $log, 0);
-
 if(PerformancePrefs::getBoolean('LISTVIEW_COMPUTE_PAGE_COUNT', false) === true){
 	$count_result = $adb->query( mkCountQuery( $list_query));
 	$noofrows = $adb->query_result($count_result,0,"count");
@@ -211,7 +207,7 @@ $smarty->assign('CUSTOM_LINKS', Vtiger_Link::getAllByType(getTabid($currentModul
 
 if(isset($_REQUEST['ajax']) && $_REQUEST['ajax'] != '')
 	$smarty->display("ListViewEntries.tpl");
-else 
+else
 	$smarty->display('ListView.tpl');
 
 ?>

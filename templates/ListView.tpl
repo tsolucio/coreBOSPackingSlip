@@ -340,9 +340,9 @@ function alphabetic(module,url,dataid)
 	{include file="MergeColumns.tpl"}
 </div>	 
 	   <!-- PUBLIC CONTENTS STARTS-->
-	  <div id="ListViewContents" class="small" style="width:100%;">
+	 <div id="ListViewContents" class="small" style="width:100%;">
 		{include file="modules/Issuecards/ListViewEntries.tpl"}
-      </div>
+	 </div>
 
      </td>
         <td valign=top><img src="{'showPanelTopRight.gif'|@vtiger_imageurl:$THEME}"></td>
@@ -362,12 +362,8 @@ function alphabetic(module,url,dataid)
 
 </div>
 <!-- END -->
-{if $MODULE eq 'Leads' or $MODULE eq 'Contacts' or $MODULE eq 'Accounts' or $MODULE eq 'Vendors'}
-<form name="SendMail"><div id="sendmail_cont" style="z-index:100001;position:absolute;"></div></form>
-{/if}
 
 <script>
-
 {literal}
 function recalculateStock()
 {
@@ -393,7 +389,6 @@ function recalculateStock()
                       );
     }
 }
-
 
 function ajaxChangeStatus(statusname)
 {
