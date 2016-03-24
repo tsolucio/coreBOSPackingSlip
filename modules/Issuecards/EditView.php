@@ -7,7 +7,6 @@
  * Portions created by vtiger are Copyright (C) vtiger.
  * All Rights Reserved.
  ************************************************************************************/
-
 require_once ('Smarty_setup.php');
 require_once ('data/Tracker.php');
 require_once ('modules/Quotes/Quotes.php');
@@ -221,8 +220,7 @@ if ($focus->mode == 'edit')
 	$smarty->display("modules/Issuecards/InventoryEditView.tpl");
 else
 	$smarty->display('modules/Issuecards/InventoryCreateView.tpl');
-	
-	
+
 function getIssuecardsAssociatedProducts($focus,$seid='')
 {
 	global $log;
