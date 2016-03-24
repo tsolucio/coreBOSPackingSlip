@@ -11,7 +11,7 @@
 
 <!-- Avoid this actions display for PriceBook module-->
 
-<!-- Added this file to display the Inventory Actions based on the Inventory Modules -->
+<!-- display the Inventory Actions based on the Inventory Modules -->
 <table width="100%" border="0" cellpadding="5" cellspacing="0">
 
 	<tr>
@@ -276,13 +276,13 @@ function sendpdf_submit()
 	document.DetailView.submit();
 {/literal}
 	{if $MODULE eq 'Invoice'}
-		OpenCompose('{$INV_NO}','Invoice',{$ID});
+		OpenCompose('{$INV_NO}','Invoice:{'SINGLE_Invoice'|@getTranslatedString:$MODULE}',{$ID});
 	{elseif $MODULE eq 'Quotes'}
-		OpenCompose('{$QUO_NO}','Quote',{$ID});
+		OpenCompose('{$QUO_NO}','Quote:{'SINGLE_Quotes'|@getTranslatedString:$MODULE}',{$ID});
 	{elseif $MODULE eq 'PurchaseOrder'}
-		OpenCompose('{$PO_NO}','PurchaseOrder',{$ID});
+		OpenCompose('{$PO_NO}','PurchaseOrder:{'SINGLE_PurchaseOrder'|@getTranslatedString:$MODULE}',{$ID});
 	{elseif $MODULE eq 'SalesOrder'}
-		OpenCompose('{$SO_NO}','SalesOrder',{$ID});
+		OpenCompose('{$SO_NO}','SalesOrder:{'SINGLE_SalesOrder'|@getTranslatedString:$MODULE}',{$ID});
 	{/if}
 {literal}
 }
