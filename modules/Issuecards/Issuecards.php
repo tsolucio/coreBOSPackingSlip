@@ -472,6 +472,11 @@ class Issuecards extends CRMEntity {
 	function vtlib_handler($modulename, $event_type) {
 		if($event_type == 'module.postinstall') {
 			// TODO Handle post installation actions
+			$modAccounts=Vtiger_Module::getInstance('Accounts');
+			$modContacts=Vtiger_Module::getInstance('Contacts');
+			$modIss=Vtiger_Module::getInstance('Issuecards');
+			if ($modAccounts) $modAccounts->setRelatedList($modIss, 'Issuecards', Array('ADD'),'get_dependents_list');
+			if ($modContacts) $modContacts->setRelatedList($modIss, 'Issuecards', Array('ADD'),'get_dependents_list');
 			$this->setModuleSeqNumber('configure', $modulename, 'pslip-', '0000001');
 		} else if($event_type == 'module.disabled') {
 			// TODO Handle actions when this module is disabled.
