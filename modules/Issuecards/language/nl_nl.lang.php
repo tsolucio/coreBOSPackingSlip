@@ -8,16 +8,41 @@
  * All Rights Reserved.
  ************************************************************************************/
 
-$mod_strings = Array(
-	'ModuleName' => 'Module Name',
-	'SINGLE_ModuleName' => 'Module Name',
-	'ModuleName ID' => 'Module Name ID',
-
-	'LBL_CUSTOM_INFORMATION' => 'Custom Information',
-	'LBL_MODULEBLOCK_INFORMATION' => 'ModuleBlock Information',
-	'LBL_DESCRIPTION_INFORMATION' => 'Verkoopkans omschrijving',
-
+$mod_strings = array(
+	'LBL_ISSUECARDS_INFO' => 'Pakbon informatie',
+	'LBL_ADDRESS_INFORMATION' => 'Adres informatie',
+	'LBL_DESCRIPTION_INFO' => 'Omschrijving',
+	'ModuleName' => 'Pakbonnen',
+	'SINGLE_ModuleName' => 'Pakbon',
+	'ModuleName ID' => 'Pakbon',
+	'LBL_CUSTOM_INFORMATION' => 'Eigen informatie',
+	'LBL_MODULEBLOCK_INFORMATION' => 'Pakbon informatie',
 	'ModuleFieldLabel' => 'ModuleFieldLabel Text',
+	'Issuecards No' => 'Pakbon nr',
+	'Issuecard Date' => 'Datum pakbon',
+	'pslip_no' => 'Pakbon nr',
+	'deliver_date' => 'Afleverdatum',
+	'accid' => 'Account',
+	'invoicestatus' => 'Factuurstatus',
+	'ctoid' => 'Contact',
+	'Assigned To' => 'Toegewezen aan ',
+	'Created Time' => 'Aangemaakt op',
+	'Modified Time' => 'Gewijzigd op',
+	'Last Modified By' => 'Laatst gewijzigd door',
+	'calle' => 'Adres',
+	'poblacion' => 'Plaats',
+	'cpostal' => 'Postcode',
+	'provincia' => 'Provincie',
+	'pais' => 'Land',
+	'Description' => 'Beschrijving',
+	'Adjustment' => 'Bijstelling',
+	'Sub Total' => 'Subtotaal',
+	'Total' => 'Totaal',
+	'Tax Type' => 'Belastingtype',
+	'Discount Percent' => 'Kortingspercentage',
+	'Discount Amount' => 'Kortingshoeveelheid',
+	'S&H Amount' => 'Verpakkings- en verzendkosten',
+	'Currency' => 'Valuta',
+	'Conversion Rate' => 'Wisselkoers',
 );
-
 ?>
