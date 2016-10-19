@@ -42,6 +42,21 @@ $mod_strings = array(
 	'provincia' => 'Provincia',
 	'cpostal' => 'Código Postal',
 	'pais' => 'País',
-
+	'subject' => 'Referencia',
+	'Sub Total'=>'Sub Total',
+	'S&H Amount' => 'Importe Envío y Manipulado',
+	'Total'=>'Total',
+	'Tax Type'=>'Impuesto',
+	'Discount Percent'=>'Descuento %',
+	'Discount Amount'=>'Descuento Importe',
+	'Terms & Conditions'=>'Condiciones Generales',
+	
+	'Created'=>'Creada',
+	'Approved'=>'Aprobada',
+	'Sent'=>'Enviada',
+	'Credit Invoice'=>'Rectificativa',
+	'Paid'=>'Pagada',
+	'AutoCreated'=>'Automática',
+	'Cancel'=>'Cancelada',
 );
 ?>

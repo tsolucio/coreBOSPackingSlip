@@ -34,6 +34,7 @@
 <sql><![CDATA[CREATE TABLE `vtiger_issuecards` (
   `issuecardid` int(19) NOT NULL,
   `issuecards_no` varchar(100) DEFAULT NULL,
+  `subject` varchar(150) DEFAULT NULL,
   `pslip_no` varchar(100) DEFAULT NULL,
   `issue_date` date DEFAULT NULL,
   `deliver_date` date DEFAULT NULL,
@@ -109,6 +110,26 @@
 <sequence>2</sequence>
 <maximumlength>100</maximumlength>
 <typeofdata>D~O</typeofdata>
+<quickcreate>1</quickcreate>
+<quickcreatesequence></quickcreatesequence>
+<displaytype>1</displaytype>
+<info_type>BAS</info_type>
+<helpinfo><![CDATA[]]></helpinfo>
+<masseditable>1</masseditable>
+</field>
+<field>
+<fieldname>subject</fieldname>
+<uitype>1</uitype>
+<columnname>subject</columnname>
+<tablename>vtiger_issuecards</tablename>
+<generatedtype>1</generatedtype>
+<fieldlabel>subject</fieldlabel>
+<readonly>1</readonly>
+<presence>0</presence>
+<defaultvalue></defaultvalue>
+<sequence>3</sequence>
+<maximumlength>100</maximumlength>
+<typeofdata>V~O</typeofdata>
 <quickcreate>1</quickcreate>
 <quickcreatesequence></quickcreatesequence>
 <displaytype>1</displaytype>
@@ -667,6 +688,37 @@
 <sharingaccess>
 <default>public_readwritedelete</default>
 </sharingaccess>
+<relatedlists>
+<relatedlist>
+<function>get_activities</function>
+<label>Activities</label>
+<sequence>1</sequence>
+<presence>0</presence>
+<actions>
+<action>ADD</action>
+<action>SELECT</action>
+</actions>
+<relatedmodule>Calendar</relatedmodule>
+</relatedlist>
+<relatedlist>
+<function>get_history</function>
+<label>Activity History</label>
+<sequence>2</sequence>
+<presence>0</presence>
+<relatedmodule>Calendar</relatedmodule>
+</relatedlist>
+<relatedlist>
+<function>get_attachments</function>
+<label>Documents</label>
+<sequence>3</sequence>
+<presence>0</presence>
+<actions>
+<action>ADD</action>
+<action>SELECT</action>
+</actions>
+<relatedmodule>Documents</relatedmodule>
+</relatedlist>
+</relatedlists>
 <customlinks>
 <customlink>
 <linktype>DETAILVIEWBASIC</linktype>
