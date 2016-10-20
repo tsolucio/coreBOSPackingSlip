@@ -348,6 +348,11 @@ class Issuecards extends CRMEntity {
 				$field->setRelatedModules(array('Issuecards'));
 				$modIss->setRelatedList($modInvD, 'InventoryDetails', Array(''),'get_dependents_list');
 			}
+			//Add Gendoc to Issuecards
+			if(vtlib_isModuleActive("evvtgendoc")){
+				$modIss->addLink('LISTVIEWBASIC','Generate Document',"javascript:showgendoctemplates('\$MODULE\$');");
+				$modIss->addLink('DETAILVIEWWIDGET','Generate Document',"module=evvtgendoc&action=evvtgendocAjax&file=DetailViewWidget&formodule=\$MODULE\$&forrecord=\$RECORD\$",'modules/evvtgendoc/evvtgendoc.gif');
+			}
 
 			$emm = new VTEntityMethodManager($adb);
 			// Adding EntityMethod for Updating Products data after updating PurchaseOrder
@@ -402,7 +407,11 @@ class Issuecards extends CRMEntity {
 				$field->setRelatedModules(array('Issuecards'));
 				$modIss->setRelatedList($modInvD, 'InventoryDetails', Array(''),'get_dependents_list');
 			}
-
+			//Add Gendoc to Issuecards
+			if(vtlib_isModuleActive("evvtgendoc")){
+				$modIss->addLink('LISTVIEWBASIC','Generate Document',"javascript:showgendoctemplates('\$MODULE\$');");
+				$modIss->addLink('DETAILVIEWWIDGET','Generate Document',"module=evvtgendoc&action=evvtgendocAjax&file=DetailViewWidget&formodule=\$MODULE\$&forrecord=\$RECORD\$",'modules/evvtgendoc/evvtgendoc.gif');
+			}
 			$emm = new VTEntityMethodManager($adb);
 			// Adding EntityMethod for Updating Products data after updating Issuecards
 			$emm->addEntityMethod("Issuecards","UpdateInventory","include/InventoryHandler.php","handleInventoryProductRel");
