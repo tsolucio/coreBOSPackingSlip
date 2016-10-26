@@ -65,7 +65,7 @@ if (isset ($_REQUEST['record']) && $_REQUEST['record'] != '')
 }
 if($isduplicate == 'true') {
 	$smarty->assign('DUPLICATE_FROM', $focus->id);
-	$Issuecards_associated_prod = getAssociatedProducts($currentModule, $focus);
+	$associated_prod = getAssociatedProducts($currentModule, $focus);
 	$inventory_cur_info = getInventoryCurrencyInfo($currentModule, $focus->id);
 	$currencyid = $inventory_cur_info['currency_id'];
 	$focus->id = '';
@@ -208,7 +208,7 @@ if ($focus->mode == 'edit') {
 	$smarty->assign('MODE', $focus->mode);
 }
 elseif (isset ($_REQUEST['isDuplicate']) && $_REQUEST['isDuplicate'] == 'true') {
-	$smarty->assign('ASSOCIATEDPRODUCTS', $Issuecards_associated_prod);
+	$smarty->assign('ASSOCIATEDPRODUCTS', $associated_prod);
 	$smarty->assign('AVAILABLE_PRODUCTS', 'true');
 	$smarty->assign('MODE', $focus->mode);
 }
