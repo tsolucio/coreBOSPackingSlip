@@ -523,5 +523,22 @@ class Issuecards extends CRMEntity {
 		$log->debug("Exiting get_history method ...");
 		return getHistory('Issucards',$query,$id);
 	}
+
+	/*
+	 * Function to get the secondary query part of a report
+	 * @param - $module primary module name
+	 * @param - $secmodule secondary module name
+	 * returns the query string formed on fetching the related data for report for secondary module
+	 */
+	function generateReportsSecQuery($module,$secmodule,$type = '',$where_condition = ''){
+		$query = $this->getRelationQuery($module,$secmodule,"vtiger_issuecards","issuecardid");
+		$query .= " left join vtiger_currency_info as vtiger_currency_info$secmodule on vtiger_currency_info$secmodule.id = vtiger_issuecards.currency_id ";
+		if(($type !== 'COLUMNSTOTOTAL') || ($type == 'COLUMNSTOTOTAL' && $where_condition == 'add')) {
+			$query .= "left join vtiger_inventoryproductrel as vtiger_inventoryproductrelIssuecards on vtiger_issuecards.issuecardid = vtiger_inventoryproductrelIssuecards.id
+				left join vtiger_products as vtiger_productsIssuecards on vtiger_productsIssuecards.productid = vtiger_inventoryproductrelIssuecards.productid
+				left join vtiger_service as vtiger_serviceIssuecards on vtiger_serviceIssuecards.serviceid = vtiger_inventoryproductrelIssuecards.productid ";
+		}
+		return $query;
+	}
 }
 ?>
