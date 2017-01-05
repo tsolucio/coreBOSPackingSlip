@@ -41,6 +41,7 @@ class Issuecards extends CRMEntity {
 		'accid' => Array('issuecards' => 'accid'),
 		'fecha_pago' => Array('issuecards' => 'fecha_pago'),
 		'invoicestatus' => Array('issuecards' => 'invoicestatus'),
+		'Total'=>Array('issuecards'=>'hdnGrandTotal'),
 		'Assigned To' => Array('crmentity' => 'smownerid')
 	);
 	var $list_fields_name = Array(
@@ -49,6 +50,7 @@ class Issuecards extends CRMEntity {
 		'accid' => 'accid',
 		'fecha_pago' => 'fecha_pago',
 		'invoicestatus' => 'invoicestatus',
+		'Total'=> 'hdnGrandTotal',
 		'Assigned To' => 'assigned_user_id'
 	);
 
