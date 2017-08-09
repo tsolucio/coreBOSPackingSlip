@@ -96,20 +96,6 @@ class Issuecards extends CRMEntity {
 	// Refers to vtiger_field.fieldname values.
 	var $mandatory_fields = Array('createdtime', 'modifiedtime', 'issuecards_no');
 
-	function __construct() {
-		global $log;
-		$this_module = get_class($this);
-		$this->column_fields = getColumnFields($this_module);
-		$this->db = PearDatabase::getInstance();
-		$this->log = $log;
-		$sql = 'SELECT 1 FROM vtiger_field WHERE uitype=69 and tabid = ? limit 1';
-		$tabid = getTabid($this_module);
-		$result = $this->db->pquery($sql, array($tabid));
-		if ($result and $this->db->num_rows($result)==1) {
-			$this->HasDirectImageField = true;
-		}
-	}
-
 	function save_module($module) {
 		global $updateInventoryProductRel_deduct_stock;
 		if ($this->HasDirectImageField) {
@@ -152,114 +138,6 @@ class Issuecards extends CRMEntity {
 		
 		$this->db->completeTransaction();
 		$this->db->println("TRANS restore ends");
-	}
-
-	/**
-	 * Return query to use based on given modulename, fieldname
-	 * Useful to handle specific case handling for Popup
-	 */
-	function getQueryByModuleField($module, $fieldname, $srcrecord, $query='') {
-		// $srcrecord could be empty
-	}
-
-	/**
-	 * Get list view query (send more WHERE clause condition if required)
-	 */
-	function getListQuery($module, $usewhere='') {
-		$query = "SELECT vtiger_crmentity.*, $this->table_name.*";
-
-		// Keep track of tables joined to avoid duplicates
-		$joinedTables = array();
-
-		// Select Custom Field Table Columns if present
-		if(!empty($this->customFieldTable)) $query .= ", " . $this->customFieldTable[0] . ".* ";
-
-		$query .= " FROM $this->table_name";
-
-		$query .= "	INNER JOIN vtiger_crmentity ON vtiger_crmentity.crmid = $this->table_name.$this->table_index";
-
-		$joinedTables[] = $this->table_name;
-		$joinedTables[] = 'vtiger_crmentity';
-
-		// Consider custom table join as well.
-		if(!empty($this->customFieldTable)) {
-			$query .= " INNER JOIN ".$this->customFieldTable[0]." ON ".$this->customFieldTable[0].'.'.$this->customFieldTable[1] .
-				" = $this->table_name.$this->table_index";
-			$joinedTables[] = $this->customFieldTable[0];
-		}
-		$query .= " LEFT JOIN vtiger_users ON vtiger_users.id = vtiger_crmentity.smownerid";
-		$query .= " LEFT JOIN vtiger_groups ON vtiger_groups.groupid = vtiger_crmentity.smownerid";
-
-		$joinedTables[] = 'vtiger_users';
-		$joinedTables[] = 'vtiger_groups';
-
-		$linkedModulesQuery = $this->db->pquery("SELECT distinct fieldname, columnname, relmodule FROM vtiger_field" .
-				" INNER JOIN vtiger_fieldmodulerel ON vtiger_fieldmodulerel.fieldid = vtiger_field.fieldid" .
-				" WHERE uitype='10' AND vtiger_fieldmodulerel.module=?", array($module));
-		$linkedFieldsCount = $this->db->num_rows($linkedModulesQuery);
-
-		for($i=0; $i<$linkedFieldsCount; $i++) {
-			$related_module = $this->db->query_result($linkedModulesQuery, $i, 'relmodule');
-			$fieldname = $this->db->query_result($linkedModulesQuery, $i, 'fieldname');
-			$columnname = $this->db->query_result($linkedModulesQuery, $i, 'columnname');
-
-			$other = CRMEntity::getInstance($related_module);
-			vtlib_setup_modulevars($related_module, $other);
-
-			if(!in_array($other->table_name, $joinedTables)) {
-				$query .= " LEFT JOIN $other->table_name ON $other->table_name.$other->table_index = $this->table_name.$columnname";
-				$joinedTables[] = $other->table_name;
-			}
-		}
-
-		global $current_user;
-		$query .= $this->getNonAdminAccessControlQuery($module,$current_user);
-		$query .= "	WHERE vtiger_crmentity.deleted = 0 ".$usewhere;
-		return $query;
-	}
-
-	/**
-	 * Apply security restriction (sharing privilege) query part for List view.
-	 */
-	function getListViewSecurityParameter($module) {
-		global $current_user;
-		require('user_privileges/user_privileges_'.$current_user->id.'.php');
-		require('user_privileges/sharing_privileges_'.$current_user->id.'.php');
-
-		$sec_query = '';
-		$tabid = getTabid($module);
-
-		if($is_admin==false && $profileGlobalPermission[1] == 1 && $profileGlobalPermission[2] == 1
-			&& $defaultOrgSharingPermission[$tabid] == 3) {
-
-				$sec_query .= " AND (vtiger_crmentity.smownerid in($current_user->id) OR vtiger_crmentity.smownerid IN 
-					(
-						SELECT vtiger_user2role.userid FROM vtiger_user2role 
-						INNER JOIN vtiger_users ON vtiger_users.id=vtiger_user2role.userid 
-						INNER JOIN vtiger_role ON vtiger_role.roleid=vtiger_user2role.roleid 
-						WHERE vtiger_role.parentrole LIKE '".$current_user_parent_role_seq."::%'
-					) 
-					OR vtiger_crmentity.smownerid IN 
-					(
-						SELECT shareduserid FROM vtiger_tmp_read_user_sharing_per 
-						WHERE userid=".$current_user->id." AND tabid=".$tabid."
-					) 
-					OR (";
-
-					// Build the query based on the group association of current user.
-					if(sizeof($current_user_groups) > 0) {
-						$sec_query .= " vtiger_groups.groupid IN (". implode(",", $current_user_groups) .") OR ";
-					}
-					$sec_query .= " vtiger_groups.groupid IN 
-						(
-							SELECT vtiger_tmp_read_group_sharing_per.sharedgroupid 
-							FROM vtiger_tmp_read_group_sharing_per
-							WHERE userid=".$current_user->id." and tabid=".$tabid."
-						)";
-				$sec_query .= ")
-				)";
-		}
-		return $sec_query;
 	}
 
 	/*Function to create records in current module.
@@ -432,70 +310,6 @@ class Issuecards extends CRMEntity {
 			$task->summary="Update product stock";
 			$tm->saveTask($task);
 		}
-	}
-
-	function get_activities($id, $cur_tab_id, $rel_tab_id, $actions)
-	{
-		global $log, $singlepane_view,$currentModule,$current_user, $mod_strings;
-		$log->debug("Entering get_activities(".$id.") method ...");
-		$this_module = $currentModule;
-
-		$related_module = vtlib_getModuleNameById($rel_tab_id);
-		require_once("modules/$related_module/Activity.php");
-		$other = new Activity();
-		vtlib_setup_modulevars($related_module, $other);
-		$singular_modname = vtlib_toSingular($related_module);
-
-		$parenttab = getParentTab();
-
-		if($singlepane_view == 'true')
-			$returnset = '&return_module='.$this_module.'&return_action=DetailView&return_id='.$id;
-		else
-			$returnset = '&return_module='.$this_module.'&return_action=CallRelatedList&return_id='.$id;
-
-		$button = '';
-
-		$button .= '<input type="hidden" name="activity_mode">';
-
-		if($actions) {
-			if(is_string($actions)) $actions = explode(',', strtoupper($actions));
-			if(in_array('ADD', $actions) && isPermitted($related_module,1, '') == 'yes') {
-				$button .= "<input title='".getTranslatedString('LBL_NEW'). " ". getTranslatedString('LBL_TODO', $related_module) ."' class='crmbutton small create'" .
-					" onclick='this.form.action.value=\"EventEditView\";this.form.module.value=\"Calendar4You\";this.form.return_module.value=\"$this_module\";this.form.activity_mode.value=\"Task\";' type='submit' name='button'" .
-					" value='". getTranslatedString('LBL_ADD_NEW'). " " . getTranslatedString('LBL_TODO', $related_module) ."'>&nbsp;";
-				$button .= "<input title='".getTranslatedString('LBL_NEW'). " ". getTranslatedString('LBL_EVENT', $related_module) ."' class='crmbutton small create'" .
-					" onclick='this.form.action.value=\"EventEditView\";this.form.module.value=\"Calendar4You\";this.form.return_module.value=\"$this_module\";this.form.activity_mode.value=\"Events\";' type='submit' name='button'" .
-					" value='". getTranslatedString('LBL_ADD_NEW'). " " . getTranslatedString('LBL_EVENT', $related_module) ."'>";
-			}
-		}
-
-		$query = "SELECT vtiger_activity.*,
-			vtiger_seactivityrel.*, vtiger_contactdetails.lastname,
-			vtiger_contactdetails.firstname, vtiger_cntactivityrel.*,
-			vtiger_crmentity.crmid, vtiger_crmentity.smownerid,
-			vtiger_crmentity.modifiedtime,
-			case when (vtiger_users.user_name not like '') then vtiger_users.user_name else vtiger_groups.groupname end as user_name,
-			vtiger_recurringevents.recurringtype
-			from vtiger_activity
-			inner join vtiger_seactivityrel on vtiger_seactivityrel.activityid=vtiger_activity.activityid
-			inner join vtiger_crmentity on vtiger_crmentity.crmid=vtiger_activity.activityid
-			left join vtiger_cntactivityrel on vtiger_cntactivityrel.activityid = vtiger_activity.activityid
-			left join vtiger_contactdetails on vtiger_contactdetails.contactid = vtiger_cntactivityrel.contactid
-			inner join vtiger_issuecards on vtiger_issuecards.issuecardid=vtiger_seactivityrel.crmid
-			left join vtiger_users on vtiger_users.id=vtiger_crmentity.smownerid
-			left join vtiger_groups on vtiger_groups.groupid=vtiger_crmentity.smownerid
-			left outer join vtiger_recurringevents on vtiger_recurringevents.activityid=vtiger_activity.activityid
-			where vtiger_seactivityrel.crmid=".$id." and vtiger_crmentity.deleted=0
-			and ((vtiger_activity.activitytype='Task' and vtiger_activity.status not in ('Completed','Deferred'))
-			or (vtiger_activity.activitytype in ('Meeting','Call') and  vtiger_activity.eventstatus not in ('','Held'))) ";
-
-		$return_value = GetRelatedList($this_module, $related_module, $other, $query, $button, $returnset);
-
-		if($return_value == null) $return_value = Array();
-		$return_value['CUSTOM_BUTTON'] = $button;
-
-		$log->debug("Exiting get_activities method ...");
-		return $return_value;
 	}
 
 	/**
