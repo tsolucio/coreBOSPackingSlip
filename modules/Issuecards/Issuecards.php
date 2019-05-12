@@ -9,7 +9,6 @@
  ************************************************************************************/
 require_once 'data/CRMEntity.php';
 require_once 'data/Tracker.php';
-require_once 'user_privileges/default_module_view.php';
 require_once 'modules/InventoryDetails/InventoryDetails.php';
 
 class Issuecards extends CRMEntity {
@@ -23,6 +22,7 @@ class Issuecards extends CRMEntity {
 	/** Indicator if this is a custom module or standard module */
 	public $IsCustomModule = true;
 	public $HasDirectImageField = false;
+	public $moduleIcon = array('library' => 'utility', 'containerClass' => 'slds-icon_container slds-icon-standard-account', 'class' => 'slds-icon', 'icon'=>'send');
 	public $tab_name = array('vtiger_crmentity','vtiger_issuecards','vtiger_issuecardscf');
 	public $tab_name_index = array('vtiger_crmentity'=>'crmid','vtiger_issuecards'=>'issuecardid','vtiger_issuecardscf'=>'issuecardid');
 	/**

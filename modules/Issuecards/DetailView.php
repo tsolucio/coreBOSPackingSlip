@@ -7,21 +7,16 @@
  * Portions created by vtiger are Copyright (C) vtiger.
  * All Rights Reserved.
  ************************************************************************************/
-require_once('Smarty_setup.php');
-require_once('user_privileges/default_module_view.php');
+require_once 'Smarty_setup.php';
 
-global $mod_strings, $app_strings, $currentModule, $current_user, $theme, $log, $singlepane_view;
+global $mod_strings, $app_strings, $currentModule, $current_user, $theme, $log;
 
 $smarty = new vtigerCRM_Smarty();
 
 require_once 'modules/Vtiger/DetailView.php';
 
 //Get the associated Products and then display above Terms and Conditions
-$smarty->assign('ASSOCIATED_PRODUCTS',getDetailAssociatedProducts($currentModule,$focus));
+$smarty->assign('ASSOCIATED_PRODUCTS', getDetailAssociatedProducts($currentModule,$focus));
 
-$smarty->display("Inventory/InventoryDetailView.tpl");
-
-
-
-
+$smarty->display('Inventory/InventoryDetailView.tpl');
 ?>
