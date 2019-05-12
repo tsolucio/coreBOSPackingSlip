@@ -41,5 +41,21 @@ $mod_strings = array(
 	'provincia' => 'State',
 	'cpostal' => 'Postal Code',
 	'pais' => 'Country',
+	'subject' => 'Subject',
+	'Sub Total'=>'Sub Total',
+	'S&H Amount' => 'Shipping Amount',
+	'Total'=>'Total',
+	'Tax Type'=>'Tax',
+	'Discount Percent'=>'Discount %',
+	'Discount Amount'=>'Discount Amount',
+	'Terms & Conditions'=>'Terms & Conditions',
+
+	'Created'=>'Created',
+	'Approved'=>'Approved',
+	'Sent'=>'Sent',
+	'Credit Invoice'=>'Credit Invoice',
+	'Paid'=>'Paid',
+	'AutoCreated'=>'AutoCreated',
+	'Cancel'=>'Cancel',
 );
 ?>

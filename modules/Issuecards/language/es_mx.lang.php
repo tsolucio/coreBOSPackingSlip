@@ -49,7 +49,7 @@ $mod_strings = array(
 	'Discount Percent'=>'Descuento %',
 	'Discount Amount'=>'Descuento Importe',
 	'Terms & Conditions'=>'Condiciones Generales',
-	
+
 	'Created'=>'Creada',
 	'Approved'=>'Aprobada',
 	'Sent'=>'Enviada',
