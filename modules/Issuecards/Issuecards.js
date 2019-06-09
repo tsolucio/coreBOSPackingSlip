@@ -5,9 +5,7 @@
  * The Initial Developer of the Original Code is vtiger.
  * Portions created by vtiger are Copyright (C) vtiger.
  * All Rights Reserved.
- *
  ********************************************************************************/
-document.write("<script type='text/javascript' src='include/js/Inventory.js'></script>");
 // Show stock or not
 var hide_stock = 'no';
 ExecuteFunctions('ismoduleactive', 'checkmodule=Products').then(function (response) {

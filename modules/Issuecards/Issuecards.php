@@ -222,6 +222,7 @@ class Issuecards extends CRMEntity {
 			$modContacts=Vtiger_Module::getInstance('Contacts');
 			$modInvD=Vtiger_Module::getInstance('InventoryDetails');
 			$modIss=Vtiger_Module::getInstance('Issuecards');
+			$modIss->addLink('HEADERSCRIPT', 'InventoryJS', 'include/js/Inventory.js', '', 1, null, true);
 			if ($modAccounts) {
 				$modAccounts->setRelatedList($modIss, 'Issuecards', array('ADD'), 'get_dependents_list');
 			}
