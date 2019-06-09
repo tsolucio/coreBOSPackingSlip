@@ -716,7 +716,7 @@
 <action>ADD</action>
 <action>SELECT</action>
 </actions>
-<relatedmodule>Calendar</relatedmodule>
+<relatedmodule>cbCalendar</relatedmodule>
 </relatedlist>
 <relatedlist>
 <function>get_attachments</function>
@@ -733,16 +733,6 @@
 <events>
 </events>
 <customlinks>
-<customlink>
-<linktype>DETAILVIEWBASIC</linktype>
-<linklabel>View History</linklabel>
-<linkurl><![CDATA[javascript:ModTrackerCommon.showhistory('$RECORD$')]]></linkurl>
-<linkicon><![CDATA[]]></linkicon>
-<sequence>0</sequence>
-<handler_path><![CDATA[modules/ModTracker/ModTracker.php]]></handler_path>
-<handler_class><![CDATA[ModTracker]]></handler_class>
-<handler><![CDATA[isViewPermitted]]></handler>
-</customlink>
 </customlinks>
 <crons>
 </crons>
