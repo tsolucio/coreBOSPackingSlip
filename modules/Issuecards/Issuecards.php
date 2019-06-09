@@ -106,38 +106,37 @@ class Issuecards extends CRMEntity {
 		$updateInventoryProductRel_deduct_stock = true;
 
 		//in ajax save we should not call this function, because this will delete all the existing product values
-		if(inventoryCanSaveProductLines($_REQUEST, 'Issuecards')) {
+		if (inventoryCanSaveProductLines($_REQUEST, 'Issuecards')) {
 			//Based on the total Number of rows we will save the product relationship with this entity
 			saveInventoryProductDetails($this, 'Issuecards');
-			if(vtlib_isModuleActive("InventoryDetails"))
-				InventoryDetails::createInventoryDetails($this,'Issuecards');
-		} else if($_REQUEST['action'] == 'IssuecardsAjax' || $_REQUEST['action'] == 'MassEditSave') {
+			if (vtlib_isModuleActive('InventoryDetails')) {
+				InventoryDetails::createInventoryDetails($this, 'Issuecards');
+			}
+		} elseif ($_REQUEST['action'] == 'IssuecardsAjax' || $_REQUEST['action'] == 'MassEditSave') {
 			$updateInventoryProductRel_deduct_stock = false;
 		}
 
 		// Update the currency id and the conversion rate for the invoice
 		$update_query = "update vtiger_issuecards set currency_id=?, conversion_rate=? where issuecardid=?";
-		$update_params = array($this->column_fields['currency_id'], $this->column_fields['conversion_rate'], $this->id); 
+		$update_params = array($this->column_fields['currency_id'], $this->column_fields['conversion_rate'], $this->id);
 		$this->db->pquery($update_query, $update_params);
 	}
 
 	public function restore($module, $id) {
-		global $current_user;
 		$this->db->println("TRANS restore starts $module");
-		$this->db->startTransaction();		
+		$this->db->startTransaction();
 
 		$this->db->pquery('UPDATE vtiger_crmentity SET deleted=0 WHERE crmid = ?', array($id));
 		//Restore related entities/records
-		$this->restoreRelatedRecords($module,$id);
+		$this->restoreRelatedRecords($module, $id);
 
-		$product_info = $this->db->pquery("SELECT productid, quantity, sequence_no, incrementondel from vtiger_inventoryproductrel WHERE id=?",array($id));
+		$product_info = $this->db->pquery('SELECT productid, quantity, sequence_no, incrementondel from vtiger_inventoryproductrel WHERE id=?', array($id));
 		$numrows = $this->db->num_rows($product_info);
-		for($index = 0;$index < $numrows;$index++){
-			$productid = $this->db->query_result($product_info,$index,'productid');
-			$qty = $this->db->query_result($product_info,$index,'quantity');
-			deductFromProductStock($productid,$qty);
+		for ($index = 0; $index < $numrows; $index++) {
+			$productid = $this->db->query_result($product_info, $index, 'productid');
+			$qty = $this->db->query_result($product_info, $index, 'quantity');
+			deductFromProductStock($productid, $qty);
 		}
-		
 		$this->db->completeTransaction();
 		$this->db->println("TRANS restore ends");
 	}
@@ -173,15 +172,15 @@ class Issuecards extends CRMEntity {
 	*/
 	public function create_export_query($where) {
 		global $log, $current_user;
-		$log->debug("Entering create_export_query(".$where.") method ...");
+		$log->debug('> create_export_query '.$where);
 
-		include("include/utils/ExportUtils.php");
+		include 'include/utils/ExportUtils.php';
 
 		//To get the Permitted fields query and the permitted fields list
 		$sql = getPermittedFieldsQuery("Issuecards", "detail_view");
 		$fields_list = getFieldsListFromQuery($sql);
 		$fields_list .= getInventoryFieldsForExport($this->table_name);
-		$userNameSql = getSqlForNameInDisplayFormat(array('first_name'=>'vtiger_users.first_name', 'last_name' => 'vtiger_users.last_name'), 'Users');
+		//$userNameSql = getSqlForNameInDisplayFormat(array('first_name'=>'vtiger_users.first_name', 'last_name' => 'vtiger_users.last_name'), 'Users');
 
 		$query = "SELECT $fields_list FROM ".$this->entity_table."
 			INNER JOIN vtiger_issuecards ON vtiger_issuecards.issuecardid = vtiger_crmentity.crmid
@@ -195,16 +194,16 @@ class Issuecards extends CRMEntity {
 			LEFT JOIN vtiger_groups ON vtiger_groups.groupid = vtiger_crmentity.smownerid
 			LEFT JOIN vtiger_users ON vtiger_users.id = vtiger_crmentity.smownerid";
 
-		$query .= $this->getNonAdminAccessControlQuery('Issuecards',$current_user);
+		$query .= $this->getNonAdminAccessControlQuery('Issuecards', $current_user);
 		$where_auto = " vtiger_crmentity.deleted=0";
 
-		if($where != "") {
+		if ($where != '') {
 			$query .= " where ($where) AND ".$where_auto;
 		} else {
 			$query .= " where ".$where_auto;
 		}
 
-		$log->debug("Exiting create_export_query method ...");
+		$log->debug('< create_export_query');
 		return $query;
 	}
 
@@ -223,35 +222,34 @@ class Issuecards extends CRMEntity {
 			$modContacts=Vtiger_Module::getInstance('Contacts');
 			$modInvD=Vtiger_Module::getInstance('InventoryDetails');
 			$modIss=Vtiger_Module::getInstance('Issuecards');
-			if ($modAccounts) $modAccounts->setRelatedList($modIss, 'Issuecards', array('ADD'),'get_dependents_list');
-			if ($modContacts) $modContacts->setRelatedList($modIss, 'Issuecards', array('ADD'),'get_dependents_list');
-			if ($modInvD){
-				$field = Vtiger_Field::getInstance('related_to',$modInvD);
-				$field->setRelatedModules(array('Issuecards'));
-				$modIss->setRelatedList($modInvD, 'InventoryDetails', array(''),'get_dependents_list');
+			if ($modAccounts) {
+				$modAccounts->setRelatedList($modIss, 'Issuecards', array('ADD'), 'get_dependents_list');
 			}
-			//Add Gendoc to Issuecards
-			if(vtlib_isModuleActive("evvtgendoc")){
-				$modIss->addLink('LISTVIEWBASIC','Generate Document',"javascript:showgendoctemplates('\$MODULE\$');");
-				$modIss->addLink('DETAILVIEWWIDGET','Generate Document',"module=evvtgendoc&action=evvtgendocAjax&file=DetailViewWidget&formodule=\$MODULE\$&forrecord=\$RECORD\$",'modules/evvtgendoc/evvtgendoc.gif');
+			if ($modContacts) {
+				$modContacts->setRelatedList($modIss, 'Issuecards', array('ADD'), 'get_dependents_list');
+			}
+			if ($modInvD) {
+				$field = Vtiger_Field::getInstance('related_to', $modInvD);
+				$field->setRelatedModules(array('Issuecards'));
+				$modIss->setRelatedList($modInvD, 'InventoryDetails', array(''), 'get_dependents_list');
 			}
 
 			$emm = new VTEntityMethodManager($adb);
 			// Adding EntityMethod for Updating Products data after updating PurchaseOrder
-			$emm->addEntityMethod("Issuecards","UpdateInventory","include/InventoryHandler.php","handleInventoryProductRel");
+			$emm->addEntityMethod('Issuecards', 'UpdateInventory', 'include/InventoryHandler.php', 'handleInventoryProductRel');
 			// Creating Workflow for Updating Inventory Stock on Issuecards
 			$vtWorkFlow = new VTWorkflowManager($adb);
-			$invWorkFlow = $vtWorkFlow->newWorkFlow("Issuecards");
+			$invWorkFlow = $vtWorkFlow->newWorkFlow('Issuecards');
 			$invWorkFlow->test = '[{"fieldname":"pslip_no","operation":"does not contain","value":"`!`"}]';
 			$invWorkFlow->description = "UpdateInventoryProducts On Every Save";
 			$invWorkFlow->defaultworkflow = 1;
 			$vtWorkFlow->save($invWorkFlow);
-		
+
 			$tm = new VTTaskManager($adb);
 			$task = $tm->createTask('VTEntityMethodTask', $invWorkFlow->id);
 			$task->active=true;
-			$task->methodName = "UpdateInventory";
-			$task->summary="Update product stock";
+			$task->methodName = 'UpdateInventory';
+			$task->summary='Update product stock';
 			$tm->saveTask($task);
 
 			$this->setModuleSeqNumber('configure', $modulename, 'pslip-', '0000001');
@@ -269,7 +267,7 @@ class Issuecards extends CRMEntity {
 			$modIss=Vtiger_Module::getInstance('Issuecards');
 			//Add subject field to can import and export
 			$block = Vtiger_Block::getInstance('LBL_ISSUECARDS_INFO', $modIss);
-			$field = Vtiger_Field::getInstance('subject',$modIss);
+			$field = Vtiger_Field::getInstance('subject', $modIss);
 			if (!$field) {
 				$field1 = new Vtiger_Field();
 				$field1->name = 'subject';
@@ -284,61 +282,29 @@ class Issuecards extends CRMEntity {
 				$field1->presence = 0;
 				$block->addField($field1);
 			}
-			if ($modInvD){
-				$field = Vtiger_Field::getInstance('related_to',$modInvD);
+			if ($modInvD) {
+				$field = Vtiger_Field::getInstance('related_to', $modInvD);
 				$field->setRelatedModules(array('Issuecards'));
-				$modIss->setRelatedList($modInvD, 'InventoryDetails', array(''),'get_dependents_list');
-			}
-			//Add Gendoc to Issuecards
-			if(vtlib_isModuleActive("evvtgendoc")){
-				$modIss->addLink('LISTVIEWBASIC','Generate Document',"javascript:showgendoctemplates('\$MODULE\$');");
-				$modIss->addLink('DETAILVIEWWIDGET','Generate Document',"module=evvtgendoc&action=evvtgendocAjax&file=DetailViewWidget&formodule=\$MODULE\$&forrecord=\$RECORD\$",'modules/evvtgendoc/evvtgendoc.gif');
+				$modIss->setRelatedList($modInvD, 'InventoryDetails', array(''), 'get_dependents_list');
 			}
 			$emm = new VTEntityMethodManager($adb);
 			// Adding EntityMethod for Updating Products data after updating Issuecards
-			$emm->addEntityMethod("Issuecards","UpdateInventory","include/InventoryHandler.php","handleInventoryProductRel");
+			$emm->addEntityMethod('Issuecards', 'UpdateInventory', 'include/InventoryHandler.php', 'handleInventoryProductRel');
 			// Creating Workflow for Updating Inventory Stock on Issuecards
 			$vtWorkFlow = new VTWorkflowManager($adb);
-			$invWorkFlow = $vtWorkFlow->newWorkFlow("Issuecards");
+			$invWorkFlow = $vtWorkFlow->newWorkFlow('Issuecards');
 			$invWorkFlow->test = '[{"fieldname":"pslip_no","operation":"does not contain","value":"`!`"}]';
-			$invWorkFlow->description = "UpdateInventoryProducts On Every Save";
+			$invWorkFlow->description = 'UpdateInventoryProducts On Every Save';
 			$invWorkFlow->defaultworkflow = 1;
 			$vtWorkFlow->save($invWorkFlow);
 
 			$tm = new VTTaskManager($adb);
 			$task = $tm->createTask('VTEntityMethodTask', $invWorkFlow->id);
 			$task->active=true;
-			$task->methodName = "UpdateInventory";
-			$task->summary="Update product stock";
+			$task->methodName = 'UpdateInventory';
+			$task->summary='Update product stock';
 			$tm->saveTask($task);
 		}
-	}
-
-	/**
-	* Function to get Issuecards related Task & Event which have activity type Held, Completed or Deferred.
-	* @param  integer   $id
-	* returns related Task or Event record in array format
-	*/
-	public function get_history($id, $cur_tab_id, $rel_tab_id, $actions) {
-			global $log;
-			$log->debug("Entering get_history(".$id.") method ...");
-			$query = "SELECT vtiger_activity.activityid, vtiger_activity.subject, vtiger_activity.status,
-				vtiger_activity.eventstatus, vtiger_activity.activitytype,vtiger_activity.date_start,
-				vtiger_activity.due_date, vtiger_activity.time_start,vtiger_activity.time_end,
-				vtiger_crmentity.modifiedtime, vtiger_crmentity.createdtime, 
-				vtiger_crmentity.description,case when (vtiger_users.user_name not like '') then vtiger_users.user_name else vtiger_groups.groupname end as user_name
-				from vtiger_activity
-				inner join vtiger_seactivityrel on vtiger_seactivityrel.activityid=vtiger_activity.activityid
-				inner join vtiger_crmentity on vtiger_crmentity.crmid=vtiger_activity.activityid
-				left join vtiger_groups on vtiger_groups.groupid=vtiger_crmentity.smownerid
-				left join vtiger_users on vtiger_users.id=vtiger_crmentity.smownerid
-				where (vtiger_activity.activitytype = 'Meeting' or vtiger_activity.activitytype='Call' or vtiger_activity.activitytype='Task')
-				and (vtiger_activity.status = 'Completed' or vtiger_activity.status = 'Deferred' or (vtiger_activity.eventstatus = 'Held' and vtiger_activity.eventstatus != ''))
-				and vtiger_seactivityrel.crmid=".$id." and vtiger_crmentity.deleted = 0";
-		//Don't add order by, because, for security, one more condition will be added with this query in include/RelatedListView.php
-
-		$log->debug("Exiting get_history method ...");
-		return getHistory('Issucards',$query,$id);
 	}
 
 	/*

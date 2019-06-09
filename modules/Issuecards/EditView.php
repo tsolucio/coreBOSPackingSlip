@@ -154,7 +154,7 @@ if (!empty($_REQUEST['save_error']) && $_REQUEST['save_error'] == 'true') {
 if (isset($_REQUEST['potential_id']) && $_REQUEST['potential_id'] != '') {
 	$focus->column_fields['potential_id'] = $_REQUEST['potential_id'];
 	$relatedInfo = getRelatedInfo($_REQUEST['potential_id']);
-	if (!empty ($relatedInfo)) {
+	if (!empty($relatedInfo)) {
 		$setype = $relatedInfo["setype"];
 		$relID = $relatedInfo["relID"];
 	}
@@ -196,7 +196,7 @@ if (!empty($_REQUEST['parent_id']) && !empty($_REQUEST['return_module'])) {
 }
 
 // Get Account address if vtiger_account is given
-if ((isset ($_REQUEST['account_id'])) && ($_REQUEST['record'] == '') && ($_REQUEST['account_id'] != '') && ($_REQUEST['convertmode'] != 'update_quote_val')) {
+if ((isset($_REQUEST['account_id'])) && ($_REQUEST['record'] == '') && ($_REQUEST['account_id'] != '') && ($_REQUEST['convertmode'] != 'update_quote_val')) {
 	require_once 'modules/Accounts/Accounts.php';
 	$acct_focus = new Accounts();
 	$acct_focus->retrieve_entity_info($_REQUEST['account_id'], "Accounts");

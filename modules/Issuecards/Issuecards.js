@@ -10,43 +10,44 @@
 document.write("<script type='text/javascript' src='include/js/Inventory.js'></script>");
 // Show stock or not
 var hide_stock = 'no';
-ExecuteFunctions('ismoduleactive','checkmodule=Products').then(function(response) {
+ExecuteFunctions('ismoduleactive', 'checkmodule=Products').then(function (response) {
 	var obj = JSON.parse(response);
-	if(obj.isactive == true)
+	if (obj.isactive == true) {
 		hide_stock = 'no';
-	else
+	} else {
 		hide_stock = 'yes';
-}, function(error) {
+	}
+}, function (error) {
 	hide_stock = 'no';
 });
 
 function set_return(issuecards_id, issuecards_name) {
-  window.opener.document.EditView.parent_name.value = issuecards_name;
-  window.opener.document.EditView.parent_id.value = issuecards_id;
+	window.opener.document.EditView.parent_name.value = issuecards_name;
+	window.opener.document.EditView.parent_id.value = issuecards_id;
 }
 
 function set_return_specific(issuecards_id, issuecards_name) {
-  var fldName = getOpenerObj("issuecards_name");
-  var fldId = getOpenerObj("issuecards_id");
-  fldName.value = issuecards_name;
-  fldId.value = issuecards_id;
+	var fldName = getOpenerObj("issuecards_name");
+	var fldId = getOpenerObj("issuecards_id");
+	fldName.value = issuecards_name;
+	fldId.value = issuecards_id;
 }
 
-function set_return_shipbilladdress(fromlink,fldname,MODULE,ID) {
+function set_return_shipbilladdress(fromlink, fldname, MODULE, ID) {
 	var WindowSettings = "width=680,height=602,resizable=0,scrollbars=0,top=150,left=200";
-	if(fldname == 'accid'){
+	if (fldname == 'accid') {
 		var baseURL = "index.php?module=Accounts&action=Popup&popuptype=specific_account_address&form=TasksEditView&form_submit=false&fromlink=";
-	}else{
-		if(fromlink != 'DetailView'){
+	} else {
+		if (fromlink != 'DetailView') {
 			var accid = document.EditView.accid.value;
-		}else{
+		} else {
 			var accid = vtlib_listview.getFieldInfo('mouseArea_accid').recordid;
 		}
-		if(accid != ''){
+		if (accid != '') {
 			var baseURL = "index.php?module=Contacts&action=Popup&html=Popup_picker&popuptype=specific&form=EditView&parent_module=Accounts&relmod_id="+accid;
-		}else{
+		} else {
 			var baseURL = "index.php?module=Contacts&action=Popup&html=Popup_picker&popuptype=specific&form=EditView";
 		}
 	}
-	window.open(baseURL,"vtlibui10",WindowSettings);
+	window.open(baseURL, "vtlibui10", WindowSettings);
 }

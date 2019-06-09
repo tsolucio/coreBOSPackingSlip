@@ -16,42 +16,30 @@
  *  Module       : coreBOS Packing Slip
  *  Version      : 1.0
  *************************************************************************************************/
-require_once('include/logging.php');
-require_once('include/database/PearDatabase.php');
+require_once 'include/logging.php';
+require_once 'include/database/PearDatabase.php';
 
-function recalculateIssuecardsStock()
-{
-    global $adb;
+function recalculateIssuecardsStock() {
+	global $adb;
+	if ($_REQUEST['module'] == 'Issuecards') {
+		$adb->query('UPDATE vtiger_products SET qtyinstock=0');
+	}
 
-    if ($_REQUEST["module"] == "Issuecards")
-    {
-        $sql = "UPDATE vtiger_products SET qtyinstock = 0";
-        $adb->query($sql);
-    }
-    
-    $sql_i = "SELECT vtiger_inventoryproductrel.productid, sum(vtiger_inventoryproductrel.quantity) AS qty
-              FROM vtiger_issuecards 
-             INNER JOIN vtiger_crmentity 
-                ON vtiger_crmentity.crmid = vtiger_issuecards.issuecardid
-             INNER JOIN vtiger_inventoryproductrel
-                ON vtiger_inventoryproductrel.id = vtiger_issuecards.issuecardid
-             WHERE vtiger_crmentity.deleted = 0 GROUP BY productid";
-    $result_i = $adb->query($sql_i);
-    
-    while($row = $adb->fetchByAssoc($result_i))
-    {
-    	  $sql_u = "UPDATE vtiger_products SET qtyinstock = qtyinstock - ".$row['qty']." WHERE productid = ".$row['productid'];
-    	  $adb->query($sql_u);
-    }
-
+	$sql_i = 'SELECT vtiger_inventoryproductrel.productid, sum(vtiger_inventoryproductrel.quantity) AS qty
+		FROM vtiger_issuecards
+		INNER JOIN vtiger_crmentity ON vtiger_crmentity.crmid = vtiger_issuecards.issuecardid
+		INNER JOIN vtiger_inventoryproductrel ON vtiger_inventoryproductrel.id = vtiger_issuecards.issuecardid
+		WHERE vtiger_crmentity.deleted=0 GROUP BY productid';
+	$result_i = $adb->query($sql_i);
+	while ($row = $adb->fetchByAssoc($result_i)) {
+		$sql_u = "UPDATE vtiger_products SET qtyinstock = qtyinstock - ".$row['qty']." WHERE productid = ".$row['productid'];
+		$adb->query($sql_u);
+	}
 }
 
 recalculateIssuecardsStock();
 
-
-if (file_exists("modules/Receiptcards/RecalculateStock.php") && $_REQUEST["module"] == "Issuecards")
-{
-    require_once("modules/Receiptcards/RecalculateStock.php");
+if (file_exists('modules/Receiptcards/RecalculateStock.php') && $_REQUEST['module']=='Issuecards') {
+	require_once 'modules/Receiptcards/RecalculateStock.php';
 }
-
 ?>

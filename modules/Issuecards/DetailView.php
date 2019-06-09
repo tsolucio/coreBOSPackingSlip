@@ -16,7 +16,7 @@ $smarty = new vtigerCRM_Smarty();
 require_once 'modules/Vtiger/DetailView.php';
 
 //Get the associated Products and then display above Terms and Conditions
-$smarty->assign('ASSOCIATED_PRODUCTS', getDetailAssociatedProducts($currentModule,$focus));
+$smarty->assign('ASSOCIATED_PRODUCTS', getDetailAssociatedProducts($currentModule, $focus));
 
 $smarty->display('Inventory/InventoryDetailView.tpl');
 ?>
