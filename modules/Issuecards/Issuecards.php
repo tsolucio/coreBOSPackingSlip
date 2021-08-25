@@ -9,12 +9,12 @@
  ************************************************************************************/
 require_once 'data/CRMEntity.php';
 require_once 'data/Tracker.php';
+require_once 'modules/com_vtiger_workflow/include.inc';
+require_once 'modules/com_vtiger_workflow/tasks/VTEntityMethodTask.inc';
+require_once 'modules/com_vtiger_workflow/VTEntityMethodManager.inc';
 require_once 'modules/InventoryDetails/InventoryDetails.php';
 
 class Issuecards extends CRMEntity {
-	public $db;
-	public $log;
-
 	public $table_name = 'vtiger_issuecards';
 	public $table_index= 'issuecardid';
 	public $column_fields = array();
@@ -99,7 +99,7 @@ class Issuecards extends CRMEntity {
 	public $mandatory_fields = array('createdtime', 'modifiedtime', 'issuecards_no');
 
 	public function save_module($module) {
-		global $updateInventoryProductRel_deduct_stock;
+		global $updateInventoryProductRel_deduct_stock, $adb;
 		if ($this->HasDirectImageField) {
 			$this->insertIntoAttachment($this->id, $module);
 		}
@@ -119,92 +119,27 @@ class Issuecards extends CRMEntity {
 		// Update the currency id and the conversion rate for the invoice
 		$update_query = "update vtiger_issuecards set currency_id=?, conversion_rate=? where issuecardid=?";
 		$update_params = array($this->column_fields['currency_id'], $this->column_fields['conversion_rate'], $this->id);
-		$this->db->pquery($update_query, $update_params);
+		$adb->pquery($update_query, $update_params);
 	}
 
 	public function restore($module, $id) {
-		$this->db->println("TRANS restore starts $module");
-		$this->db->startTransaction();
+		global $adb;
+		$adb->println("TRANS restore starts $module");
+		$adb->startTransaction();
 
-		$this->db->pquery('UPDATE vtiger_crmentity SET deleted=0 WHERE crmid = ?', array($id));
+		$adb->pquery('UPDATE vtiger_crmentity SET deleted=0 WHERE crmid = ?', array($id));
 		//Restore related entities/records
 		$this->restoreRelatedRecords($module, $id);
 
-		$product_info = $this->db->pquery('SELECT productid, quantity, sequence_no, incrementondel from vtiger_inventoryproductrel WHERE id=?', array($id));
-		$numrows = $this->db->num_rows($product_info);
+		$product_info = $adb->pquery('SELECT productid, quantity, sequence_no, incrementondel from vtiger_inventoryproductrel WHERE id=?', array($id));
+		$numrows = $adb->num_rows($product_info);
 		for ($index = 0; $index < $numrows; $index++) {
-			$productid = $this->db->query_result($product_info, $index, 'productid');
-			$qty = $this->db->query_result($product_info, $index, 'quantity');
+			$productid = $adb->query_result($product_info, $index, 'productid');
+			$qty = $adb->query_result($product_info, $index, 'quantity');
 			deductFromProductStock($productid, $qty);
 		}
-		$this->db->completeTransaction();
-		$this->db->println("TRANS restore ends");
-	}
-
-	/*Function to create records in current module.
-	**This function called while importing records to this module*/
-	public function createRecords($obj) {
-		$createRecords = createRecords($obj);
-		return $createRecords;
-	}
-
-	/*Function returns the record information which means whether the record is imported or not
-	**This function called while importing records to this module*/
-	public function importRecord($obj, $inventoryFieldData, $lineItemDetails) {
-		$entityInfo = importRecord($obj, $inventoryFieldData, $lineItemDetails);
-		return $entityInfo;
-	}
-
-	/*Function to return the status count of imported records in current module.
-	**This function called while importing records to this module*/
-	public function getImportStatusCount($obj) {
-		$statusCount = getImportStatusCount($obj);
-		return $statusCount;
-	}
-
-	public function undoLastImport($obj, $user) {
-		$undoLastImport = undoLastImport($obj, $user);
-	}
-
-	/** Function to export the lead records in CSV Format
-	* @param reference variable - where condition is passed when the query is executed
-	* Returns Export Issuecards Query.
-	*/
-	public function create_export_query($where) {
-		global $log, $current_user;
-		$log->debug('> create_export_query '.$where);
-
-		include 'include/utils/ExportUtils.php';
-
-		//To get the Permitted fields query and the permitted fields list
-		$sql = getPermittedFieldsQuery("Issuecards", "detail_view");
-		$fields_list = getFieldsListFromQuery($sql);
-		$fields_list .= getInventoryFieldsForExport($this->table_name);
-		//$userNameSql = getSqlForNameInDisplayFormat(array('first_name'=>'vtiger_users.first_name', 'last_name' => 'vtiger_users.last_name'), 'Users');
-
-		$query = "SELECT $fields_list FROM ".$this->entity_table."
-			INNER JOIN vtiger_issuecards ON vtiger_issuecards.issuecardid = vtiger_crmentity.crmid
-			LEFT JOIN vtiger_issuecardscf ON vtiger_issuecardscf.issuecardid = vtiger_issuecards.issuecardid
-			LEFT JOIN vtiger_inventoryproductrel ON vtiger_inventoryproductrel.id = vtiger_issuecards.issuecardid
-			LEFT JOIN vtiger_products ON vtiger_products.productid = vtiger_inventoryproductrel.productid
-			LEFT JOIN vtiger_service ON vtiger_service.serviceid = vtiger_inventoryproductrel.productid
-			LEFT JOIN vtiger_contactdetails ON vtiger_contactdetails.contactid = vtiger_issuecards.ctoid
-			LEFT JOIN vtiger_account ON vtiger_account.accountid = vtiger_issuecards.accid
-			LEFT JOIN vtiger_currency_info ON vtiger_currency_info.id = vtiger_issuecards.currency_id
-			LEFT JOIN vtiger_groups ON vtiger_groups.groupid = vtiger_crmentity.smownerid
-			LEFT JOIN vtiger_users ON vtiger_users.id = vtiger_crmentity.smownerid";
-
-		$query .= $this->getNonAdminAccessControlQuery('Issuecards', $current_user);
-		$where_auto = " vtiger_crmentity.deleted=0";
-
-		if ($where != '') {
-			$query .= " where ($where) AND ".$where_auto;
-		} else {
-			$query .= " where ".$where_auto;
-		}
-
-		$log->debug('< create_export_query');
-		return $query;
+		$adb->completeTransaction();
+		$adb->println("TRANS restore ends");
 	}
 
 	/**
@@ -217,7 +152,7 @@ class Issuecards extends CRMEntity {
 		require_once 'include/events/include.inc';
 		include_once 'vtlib/Vtiger/Module.php';
 		if ($event_type == 'module.postinstall') {
-			// TODO Handle post installation actions
+			// Handle post installation actions
 			$modAccounts=Vtiger_Module::getInstance('Accounts');
 			$modContacts=Vtiger_Module::getInstance('Contacts');
 			$modInvD=Vtiger_Module::getInstance('InventoryDetails');
@@ -252,18 +187,30 @@ class Issuecards extends CRMEntity {
 			$task->methodName = 'UpdateInventory';
 			$task->summary='Update product stock';
 			$tm->saveTask($task);
-
+			// set correct capitalization of field names
+			$flds = array(
+				'adjustment' => 'txtAdjustment',
+				'subtotal' => 'hdnSubTotal',
+				'total' => 'hdnGrandTotal',
+				'taxtype' => 'hdnTaxType',
+				'discount_percent' => 'hdnDiscountPercent',
+				'discount_amount' => 'hdnDiscountAmount',
+				's_h_amount' => 'hdnS_H_Amount',
+			);
+			foreach ($flds as $column => $field) {
+				$adb->pquery('update vtiger_field set fieldname=? where columnname=? and tablename=?', [$field, $column, 'vtiger_receiptcards']);
+			}
 			$this->setModuleSeqNumber('configure', $modulename, 'pslip-', '0000001');
 		} elseif ($event_type == 'module.disabled') {
-			// TODO Handle actions when this module is disabled.
+			// Handle actions when this module is disabled.
 		} elseif ($event_type == 'module.enabled') {
-			// TODO Handle actions when this module is enabled.
+			// Handle actions when this module is enabled.
 		} elseif ($event_type == 'module.preuninstall') {
-			// TODO Handle actions when this module is about to be deleted.
+			// Handle actions when this module is about to be deleted.
 		} elseif ($event_type == 'module.preupdate') {
-			// TODO Handle actions before this module is updated.
+			// Handle actions before this module is updated.
 		} elseif ($event_type == 'module.postupdate') {
-			// TODO Handle actions after this module is updated.
+			// Handle actions after this module is updated.
 			$modInvD=Vtiger_Module::getInstance('InventoryDetails');
 			$modIss=Vtiger_Module::getInstance('Issuecards');
 			//Add subject field to can import and export

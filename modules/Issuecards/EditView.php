@@ -18,6 +18,7 @@ require_once 'include/utils/utils.php';
 
 $focus = CRMEntity::getInstance($currentModule);
 $smarty = new vtigerCRM_Smarty();
+
 $massedit1x1 = isset($_REQUEST['massedit1x1']) ? vtlib_purify($_REQUEST['massedit1x1']) : '0';
 if ($massedit1x1=='s') { // mass edit 1x1 start
 	$idstring = getSelectedRecords(
@@ -55,12 +56,12 @@ if (!empty($_REQUEST['saverepeat'])) {
 }
 $smarty->assign('CUSTOM_MODULE', $focus->IsCustomModule);
 
-$category = getParentTab($currentModule);
 $record = isset($_REQUEST['record']) ? vtlib_purify($_REQUEST['record']) : null;
 $isduplicate = isset($_REQUEST['isDuplicate']) ? vtlib_purify($_REQUEST['isDuplicate']) : null;
 
 $searchurl = getBasic_Advance_SearchURL();
 $smarty->assign('SEARCH', $searchurl);
+$smarty->assign('AVAILABLE_PRODUCTS', 'false');
 
 $currencyid = fetchCurrency($current_user->id);
 $rate_symbol = getCurrencySymbolandCRate($currencyid);
@@ -93,7 +94,7 @@ if (isset($_REQUEST['record']) && $_REQUEST['record'] != '') {
 	} else {
 		$focus->id = $record;
 		$focus->mode = 'edit';
-		$focus->retrieve_entity_info($record, 'Issuecards');
+		$focus->retrieve_entity_info($record, $currentModule);
 		$focus->name = $focus->column_fields['subject'];
 	}
 }
@@ -104,6 +105,7 @@ if ($isduplicate == 'true') {
 	$currencyid = $inventory_cur_info['currency_id'];
 	$focus->id = '';
 	$focus->mode = '';
+	$focus->column_fields['isduplicatedfromrecordid'] = $record; // in order to support duplicate workflows
 	$smarty->assign('__cbisduplicatedfromrecordid', $record);
 }
 $focus->preEditCheck($_REQUEST, $smarty);
@@ -115,7 +117,7 @@ if (!empty($_REQUEST['save_error']) && $_REQUEST['save_error'] == 'true') {
 		$explode_decode_val = explode('&', trim($decode_val, '&'));
 		$tabid = getTabid($currentModule);
 		foreach ($explode_decode_val as $fieldvalue) {
-			$value = explode("=", $fieldvalue);
+			$value = explode('=', $fieldvalue);
 			$field_name_val = $value[0];
 			$field_value =urldecode($value[1]);
 			$finfo = VTCacheUtils::lookupFieldInfo($tabid, $field_name_val);
@@ -136,7 +138,7 @@ if (!empty($_REQUEST['save_error']) && $_REQUEST['save_error'] == 'true') {
 					case '3313':
 					case '3314':
 						if (is_array($field_value)) {
-							$field_value = implode(' |##| ', $field_value);
+							$field_value = implode(Field_Metadata::MULTIPICKLIST_SEPARATOR, $field_value);
 						}
 						break;
 				}
@@ -224,7 +226,6 @@ $smarty->assign('APP', $app_strings);
 $smarty->assign('MOD', $mod_strings);
 $smarty->assign('MODULE', $currentModule);
 $smarty->assign('SINGLE_MOD', 'SINGLE_'.$currentModule);
-$smarty->assign('CATEGORY', $category);
 $smarty->assign('THEME', $theme);
 $smarty->assign('IMAGE_PATH', "themes/$theme/images/");
 $smarty->assign('ID', $focus->id);
@@ -245,8 +246,9 @@ if ($focus->mode == 'edit') {
 	$smarty->assign('UPDATEINFO', updateInfo($focus->id));
 	$associated_prod = getAssociatedProducts('Issuecards', $focus);
 	$smarty->assign('ASSOCIATEDPRODUCTS', $associated_prod);
+	$smarty->assign('AVAILABLE_PRODUCTS', (empty($associated_prod) ? 'false' : 'true'));
 	$smarty->assign('MODE', $focus->mode);
-} elseif (isset($_REQUEST['isDuplicate']) && $_REQUEST['isDuplicate'] == 'true') {
+} elseif ($isduplicate == 'true') {
 	$smarty->assign('ASSOCIATEDPRODUCTS', $associated_prod);
 	$smarty->assign('AVAILABLE_PRODUCTS', 'true');
 	$smarty->assign('MODE', $focus->mode);
@@ -280,40 +282,42 @@ if ($cbMap!=null && isPermitted('InventoryDetails', 'EditView')=='yes') {
 		$associated_prod = $product_Detail;
 	}
 }
+list($v1, $v2, $associated_prod, $customtemplatename) = cbEventHandler::do_filter('corebos.filter.inventory.itemrow.edit', array($currentModule, $focus, $associated_prod, ''));
+$smarty->assign('customtemplaterows', $customtemplatename);
 $smarty->assign('ASSOCIATEDPRODUCTS', $associated_prod);
 
 if (isset($_REQUEST['return_module'])) {
-	$smarty->assign("RETURN_MODULE", vtlib_purify($_REQUEST['return_module']));
+	$smarty->assign('RETURN_MODULE', vtlib_purify($_REQUEST['return_module']));
 } else {
-	$smarty->assign("RETURN_MODULE", "Issuecards");
+	$smarty->assign('RETURN_MODULE', 'Issuecards');
 }
 if (isset($_REQUEST['return_action'])) {
-	$smarty->assign("RETURN_ACTION", vtlib_purify($_REQUEST['return_action']));
+	$smarty->assign('RETURN_ACTION', vtlib_purify($_REQUEST['return_action']));
 } else {
-	$smarty->assign("RETURN_ACTION", "index");
+	$smarty->assign('RETURN_ACTION', 'index');
 }
 if (isset($_REQUEST['return_id'])) {
-	$smarty->assign("RETURN_ID", vtlib_purify($_REQUEST['return_id']));
+	$smarty->assign('RETURN_ID', vtlib_purify($_REQUEST['return_id']));
 }
 if (isset($_REQUEST['return_viewname'])) {
-	$smarty->assign("RETURN_VIEWNAME", vtlib_purify($_REQUEST['return_viewname']));
+	$smarty->assign('RETURN_VIEWNAME', vtlib_purify($_REQUEST['return_viewname']));
 }
 $upload_maxsize = GlobalVariable::getVariable('Application_Upload_MaxSize', 3000000, $currentModule);
-$smarty->assign("UPLOADSIZE", $upload_maxsize/1000000); //Convert to MB
-$smarty->assign("UPLOAD_MAXSIZE", $upload_maxsize);
+$smarty->assign('UPLOADSIZE', $upload_maxsize/1000000); //Convert to MB
+$smarty->assign('UPLOAD_MAXSIZE', $upload_maxsize);
 
 // Field Validation Information
 $tabid = getTabid($currentModule);
 $validationData = getDBValidationData($focus->tab_name, $tabid);
 $validationArray = split_validationdataArray($validationData);
 
-$smarty->assign("VALIDATION_DATA_FIELDNAME", $validationArray['fieldname']);
-$smarty->assign("VALIDATION_DATA_FIELDDATATYPE", $validationArray['datatype']);
-$smarty->assign("VALIDATION_DATA_FIELDLABEL", $validationArray['fieldlabel']);
+$smarty->assign('VALIDATION_DATA_FIELDNAME', $validationArray['fieldname']);
+$smarty->assign('VALIDATION_DATA_FIELDDATATYPE', $validationArray['datatype']);
+$smarty->assign('VALIDATION_DATA_FIELDLABEL', $validationArray['fieldlabel']);
 
 // In case you have a date field
-$smarty->assign("CALENDAR_LANG", $app_strings['LBL_JSCALENDAR_LANG']);
-$smarty->assign("CALENDAR_DATEFORMAT", parse_calendardate($app_strings['NTC_DATE_FORMAT']));
+$smarty->assign('CALENDAR_LANG', $app_strings['LBL_JSCALENDAR_LANG']);
+$smarty->assign('CALENDAR_DATEFORMAT', parse_calendardate($app_strings['NTC_DATE_FORMAT']));
 
 // Module Sequence Numbering
 $mod_seq_field = getModuleSequenceField($currentModule);
@@ -328,8 +332,8 @@ if ($focus->mode != 'edit' && $mod_seq_field != null) {
 	if ($adb->num_rows($mod_seq_string) == 0 || $focus->checkModuleSeqNumber($focus->table_name, $mod_seq_field['column'], $mod_seq_prefix.$mod_seq_no)) {
 		$smarty->assign('ERROR_MESSAGE_CLASS', 'cb-alert-warning');
 		$smarty->assign('ERROR_MESSAGE', '<b>'. getTranslatedString($mod_seq_field['label']). ' '. getTranslatedString('LBL_NOT_CONFIGURED')
-			.' - '. getTranslatedString('LBL_PLEASE_CLICK') .' <a href="index.php?module=Settings&action=CustomModEntityNo&parenttab=Settings&selmodule='.$currentModule
-			.'">'.getTranslatedString('LBL_HERE').'</a> '. getTranslatedString('LBL_TO_CONFIGURE'). ' '. getTranslatedString($mod_seq_field['label']) .'</b>');
+			.' - '. getTranslatedString('LBL_PLEASE_CLICK') .' <a href="index.php?module=Settings&action=CustomModEntityNo&selmodule='
+			.$currentModule.'">'.getTranslatedString('LBL_HERE').'</a> '.getTranslatedString('LBL_TO_CONFIGURE').' '.getTranslatedString($mod_seq_field['label']).'</b>');
 	} else {
 		$smarty->assign('MOD_SEQ_ID', $autostr);
 	}
@@ -341,7 +345,7 @@ if ($focus->mode != 'edit' && $mod_seq_field != null) {
 	}
 }
 
-//if create SO, get all available product taxes and shipping & Handling taxes
+//if create Issuecards, get all available product taxes and shipping & Handling taxes
 if ($focus->mode != 'edit') {
 	$tax_details = getAllTaxes('available');
 	$sh_tax_details = getAllTaxes('available', 'sh');
@@ -360,20 +364,27 @@ if ($focus->mode == 'edit') {
 	$smarty->assign('INV_CURRENCY_ID', $currencyid);
 }
 
-$smarty->assign('CREATEMODE', isset($_REQUEST['createmode']) ? vtlib_purify($_REQUEST['createmode']) : '');
-
+// Gather the custom link information to display
+include_once 'vtlib/Vtiger/Link.php';
+$customlink_params = array('MODULE'=>$currentModule, 'RECORD'=>$focus->id, 'ACTION'=>vtlib_purify($_REQUEST['action']));
+$smarty->assign(
+	'CUSTOM_LINKS',
+	Vtiger_Link::getAllByType($tabid, array('EDITVIEWBUTTON','EDITVIEWBUTTONMENU','EDITVIEWWIDGET','EDITVIEWHTML'), $customlink_params, null, $focus->id)
+);
 // Gather the help information associated with fields
 $smarty->assign('FIELDHELPINFO', vtlib_getFieldHelpInfo($currentModule));
 $smarty->assign('Module_Popup_Edit', isset($_REQUEST['Module_Popup_Edit']) ? vtlib_purify($_REQUEST['Module_Popup_Edit']) : 0);
 $smarty->assign('SandRActive', GlobalVariable::getVariable('Application_SaveAndRepeatActive', 0, $currentModule));
 $cbMapFDEP = Vtiger_DependencyPicklist::getFieldDependencyDatasource($currentModule);
 $smarty->assign('FIELD_DEPENDENCY_DATASOURCE', json_encode($cbMapFDEP));
-
 //Get Service or Product by default when create
 $smarty->assign('PRODUCT_OR_SERVICE', GlobalVariable::getVariable('Inventory_ProductService_Default', 'Products', $currentModule, $current_user->id));
 $smarty->assign('Inventory_ListPrice_ReadOnly', GlobalVariable::getVariable('Inventory_ListPrice_ReadOnly', '0', $currentModule, $current_user->id));
+$smarty->assign('Inventory_Comment_Style', GlobalVariable::getVariable('Inventory_Comment_Style', 'width:70%;height:40px;', $currentModule, $current_user->id));
+$smarty->assign('Application_Textarea_Style', GlobalVariable::getVariable('Application_Textarea_Style', 'height:140px;', $currentModule, $current_user->id));
 //Set taxt type group or individual by default when create
 $smarty->assign('TAX_TYPE', GlobalVariable::getVariable('Inventory_Tax_Type_Default', 'individual', $currentModule, $current_user->id));
+$smarty->assign('TAXFILLINMODE', GlobalVariable::getVariable('Inventory_Tax_FillInMode', 'All', $currentModule, $current_user->id));
 //Show or not the Header to copy address to left or right
 $smarty->assign('SHOW_COPY_ADDRESS', GlobalVariable::getVariable('Application_Show_Copy_Address', 1, $currentModule, $current_user->id));
 $smarty->assign('SHOW_SHIPHAND_CHARGES', GlobalVariable::getVariable('Inventory_Show_ShippingHandlingCharges', 1, $currentModule, $current_user->id));
