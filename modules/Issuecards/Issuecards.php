@@ -262,7 +262,7 @@ class Issuecards extends CRMEntity {
 	 * returns the query string formed on fetching the related data for report for secondary module
 	 */
 	public function generateReportsSecQuery($module, $secmodule, $queryPlanner, $type = '', $where_condition = '') {
-		$query = $this->getRelationQuery($module, $secmodule, 'vtiger_issuecards', 'issuecardid');
+		$query = $this->getRelationQuery($module, $secmodule, 'vtiger_issuecards', 'issuecardid', $queryPlanner);
 		$query .= " left join vtiger_currency_info as vtiger_currency_info$secmodule on vtiger_currency_info$secmodule.id = vtiger_issuecards.currency_id ";
 		if (($type !== 'COLUMNSTOTOTAL') || ($type == 'COLUMNSTOTOTAL' && $where_condition == 'add')) {
 			$query.='left join vtiger_inventoryproductrel as vtiger_inventoryproductrelIssuecards on vtiger_issuecards.issuecardid=vtiger_inventoryproductrelIssuecards.id
